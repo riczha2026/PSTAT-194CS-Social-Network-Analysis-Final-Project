@@ -1,0 +1,32 @@
+---
+title: "SNA Final Project Slides"
+subtitle: "PSTAT 194CS"
+author: "Richard Zhang, Toby Liu, Frank Wang, Max Peng"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Google Dataset
+
+## Dataset Characteristics:
+- Type: Directed web graph
+- Nodes (webpages): 875713
+- Edges (hyperlinks): 5105039
+- Source: Google Programming Contest (2002)
+
+
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
