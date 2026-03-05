@@ -1,0 +1,21 @@
+---
+title: "PSTAT194CS_SNA_Final_Project"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,   # hides code
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+
+
+\newpage
+
+## Appendix
+
+```{r appendix-code, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
