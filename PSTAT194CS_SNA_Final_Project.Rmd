@@ -11,7 +11,23 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Dataset
 
+# Loading and Preparing Data
+```{r}
+url = "https://snap.stanford.edu/data/web-Google.txt.gz"
+download.file(url, destfile = "web-Google.txt.gz", mode = "wb")
+```
+```{r}
+library(igraph)
+
+edges = read.table(
+  "web-Google.txt.gz",
+  comment.char = "#",
+)
+
+graph = graph_from_data_frame(edges, directed=TRUE)
+```
 
 \newpage
 
