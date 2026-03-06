@@ -29,6 +29,45 @@ edges = read.table(
 graph = graph_from_data_frame(edges, directed=TRUE)
 ```
 
+
+```{r}
+cat("Number of Nodes:",vcount(graph),"\n")
+cat("Number of Edges:",ecount(graph))
+```
+
+```{r}
+is_directed(graph)
+```
+
+
+
+```{r}
+is_weighted(graph)
+```
+
+
+```{r}
+summary(graph)
+```
+
+
+```{r}
+set.seed(123)
+
+subgraphs = lapply(1:4, function(x) {
+  induced_subgraph(graph, sample(V(graph), 200))
+})
+```
+
+
+```{r}
+subgraphs[[1]]
+subgraphs[[2]]
+subgraphs[[3]]
+subgraphs[[4]]
+```
+
+
 \newpage
 
 ## Appendix
