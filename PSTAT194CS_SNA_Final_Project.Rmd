@@ -229,34 +229,38 @@ for (i in 1:4) {
 }
 ```
 
-
 # 5) Community Detection
 
-Because the graph is directed, we need to convert it into an undirected graph for community detection. 
+Because the community detection algorithms want an undirected graph and our current graph is directed, we need to convert it into an undirected graph first. Then, we can run all of the community detection algorithms on each subgraph and store it all inside one dataframe. We will also store the results inside a comunity objects data structure so that we can use the results later.
+
 ```{r}
 # convert all into undirected graphs
 undirected_subgraphs <- vector("list", 4)
 for (i in 1:4){
-  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]], mode="collapse")
 }
 # list to store all results
 all_results <- list()
+community_objects <- list()
 
 for (i in 1:4) {
   g <- undirected_subgraphs[[i]]
   
-  # run algs
-  fg   <- cluster_fast_greedy(g)
-  louv <- cluster_louvain(g)
-  walk <- cluster_walktrap(g)
+  community_objects[[i]] <- list(
+    fast_greedy = cluster_fast_greedy(g),
+    louvain     = cluster_louvain(g),
+    walktrap    = cluster_walktrap(g)
+  )
   
-  # store into list
+  # Grab the objects we just saved to calculate stats
+  objs <- community_objects[[i]]
+  
   all_results[[i]] <- data.frame(
     Subgraph      = i,
     Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
-    N_communities = c(length(fg), length(louv), length(walk)),
-    Modularity_Q  = round(c(modularity(fg), modularity(louv), modularity(walk)), 4),
-    Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
+    N_communities = c(length(objs$fast_greedy), length(objs$louvain), length(objs$walktrap)),
+    Modularity_Q  = round(c(modularity(objs$fast_greedy), modularity(objs$louvain), modularity(objs$walktrap)), 4),
+    Max_Comm_Size = c(max(sizes(objs$fast_greedy)), max(sizes(objs$louvain)), max(sizes(objs$walktrap)))
   )
 }
 
@@ -265,56 +269,9 @@ final_comparison <- do.call(rbind, all_results)
 final_comparison
 ```
 
+Looking at the results, we see that Walktrap generally detects more communities than the other 2 algorithms. All of the algorithms have high modularity greater than 0.7, suggesting that they found clear communities.
 
 
-# 6) Adjacency Matrix
-```{r}
-<<<<<<< HEAD
-for(i in 1:4){
-  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
-  
-  image(adj_mat,
-        main = paste("Subgraph", i, "- Original Node Order"),
-        col = c("white", "steelblue"),
-        axes = FALSE)
-}
-=======
-# convert all into undirected graphs
-undirected_subgraphs <- vector("list", 4)
-for (i in 1:4){
-  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
-}
-# list to store all results
-all_results <- list()
-
-for (i in 1:4) {
-  g <- undirected_subgraphs[[i]]
-  
-  # run algs
-  fg   <- cluster_fast_greedy(g)
-  louv <- cluster_louvain(g)
-  walk <- cluster_walktrap(g)
-  
-  # store into list
-  all_results[[i]] <- data.frame(
-    Subgraph      = i,
-    Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
-    N_communities = c(length(fg), length(louv), length(walk)),
-    Modularity_Q  = round(c(modularity(fg), modularity(louv), modularity(walk)), 4),
-    Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
-  )
-}
-
-# combine list into one table
-final_comparison <- do.call(rbind, all_results)
-final_comparison
->>>>>>> b78d14e34920b85431e3f00c1c3d5c71a504e95a
-```
-
-
-
-<<<<<<< HEAD
-=======
 # 6) Adjacency Matrix
 ```{r}
 for(i in 1:4){
@@ -328,8 +285,6 @@ for(i in 1:4){
 ```
 
 
-
->>>>>>> b78d14e34920b85431e3f00c1c3d5c71a504e95a
 ```{r}
 set.seed(42)
 for(i in 1:4){
@@ -345,20 +300,45 @@ for(i in 1:4){
         axes = FALSE)
 }
 ```
-<<<<<<< HEAD
-=======
 
 
 
+# 7) Reordering Nodes for Community Detection
 
+As we see above, all of the nodes are in one connected component. As such, this step is essentially the same as above. We will reorder the adjacency matrices for all of the remaining subgraphs as well.
 
+```{r}
+for (i in 1:4) {
+  A <- as_adjacency_matrix(undirected_subgraphs[[i]], sparse = FALSE)
+  
+  par(mfrow = c(1, 3))
+  
+  # loop through the algorithms
+  alg_names <- names(community_objects[[i]])
+  
+  for (alg in alg_names) {
+    comm_obj <- community_objects[[i]][[alg]]
+    
+    ord <- order(membership(comm_obj))
+    
+    A_reordered <- A[ord, ord]
+    
+    image(A_reordered,
+          main = paste("Sub", i, ":", alg),
+          xlab = "Node (reordered)", 
+          ylab = "Node (reordered)",
+          col=c("white", "steelblue"),
+          axes = FALSE)
+  }
+  
+  # reset plots for next one
+  par(mfrow = c(1, 1))
+}
+```
 
+After reordering by community for each algorithm, we can see that the nodes form multiple boxes. This represents communities where nodes are highly interconnected. The adjacency matrix also happens to be mirrored across the y=x line, and that's because we used the undirected graph. We chose to use the undirected graph instead of the directed graph because that is the graph the algorithms used to detect the communities. If you also compare the adjencency matrix to the algorithm results, you see that the boxes correspond to how many communities each algorithm detected.
 
-
-
-
-
->>>>>>> b78d14e34920b85431e3f00c1c3d5c71a504e95a
+There are two main shapes we see in the adjacency matrix. First is this sparse L shape. This represents a central node that connects to many other nodes. In the context of Google, this could be a site like Wikipedia that has links to many different communities. Next is a solid box. This represents a community where all the nodes are closely interconnected. This could be a set of subpages, where all pages link to each other. 
 
 
 
