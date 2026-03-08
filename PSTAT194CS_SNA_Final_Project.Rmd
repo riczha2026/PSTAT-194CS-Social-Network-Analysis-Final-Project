@@ -62,7 +62,7 @@ summary(graph)
 
 
 ## Code Implemenation
-```{r}
+```{r, eval=FALSE}
 set.seed(123)
 
 sub.network = lapply(1:4, function(x){
@@ -71,7 +71,7 @@ sub.network = lapply(1:4, function(x){
 ```
 
 ## Checking Subgraphs
-```{r}
+```{r, eval=FALSE}
 sub.network[[1]]
 sub.network[[2]]
 sub.network[[3]]
@@ -180,7 +180,7 @@ for(i in 1:4){
 
 # Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
-```{r, eval = TRUE}
+```{r, eval = TRUE, results='hide'}
 for (i in 1:4) {
   cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
   
@@ -303,7 +303,8 @@ for(i in 1:4){
 }
 ```
 
-
+The adjacency matrix of each 200-node subgraph was examined to identify structural patterns in the Google web graph. Each entry in the matrix represents the presence of a directed hyperlink between two pages. In the original node ordering, edges appear scattered with no discernible pattern, reflecting the arbitrary order in which nodes were sampled.
+To reveal underlying structure, nodes were reordered by Louvain community membership. After reordering, clear diagonal block patterns emerged, particularly in Subgraph 4 which contained 1,608 edges. Each block along the diagonal represents a group of web pages that densely hyperlink to one another, likely corresponding to topically related pages. The sparsity off the diagonal indicates that pages from different communities rarely link directly to each other. This visual confirmation aligns with the community detection results, supporting the presence of meaningful cluster structure within the Google web graph.
 
 # 7) Reordering Nodes for Community Detection
 
