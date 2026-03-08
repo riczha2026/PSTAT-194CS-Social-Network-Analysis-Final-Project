@@ -308,13 +308,9 @@ plot(
 # 4) Network Metrics
 ## DELETEMEMetrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
-<<<<<<< HEAD
 # Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
-```{r, eval = TRUE, results='hide'}
-=======
 ```{r, echo = FALSE, eval = TRUE}
->>>>>>> 81e4d5ed7c19759bef9ee7fbbe7a3a9df04187ce
 for (i in 1:4) {
   cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
   
