@@ -218,7 +218,7 @@ for (i in 1:4) {
   cat("Closeness Centrality:", "\n")
   clr <- centr_clo(subgraphs[[i]], mode="all", normalized=T)
   print(centr_clo(subgraphs[[i]], mode="all", normalized=T))
-  cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN")
+  cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN", "\n")
   sort(clr$res, decreasing = T, index.return = T) # REMOVE ME Can remove if we don't want to plot
   
   cat("Local Transitivity:", "\n")
@@ -269,6 +269,54 @@ final_comparison
 
 # 6) Adjacency Matrix
 ```{r}
+<<<<<<< HEAD
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  image(adj_mat,
+        main = paste("Subgraph", i, "- Original Node Order"),
+        col = c("white", "steelblue"),
+        axes = FALSE)
+}
+=======
+# convert all into undirected graphs
+undirected_subgraphs <- vector("list", 4)
+for (i in 1:4){
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
+}
+# list to store all results
+all_results <- list()
+
+for (i in 1:4) {
+  g <- undirected_subgraphs[[i]]
+  
+  # run algs
+  fg   <- cluster_fast_greedy(g)
+  louv <- cluster_louvain(g)
+  walk <- cluster_walktrap(g)
+  
+  # store into list
+  all_results[[i]] <- data.frame(
+    Subgraph      = i,
+    Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+    N_communities = c(length(fg), length(louv), length(walk)),
+    Modularity_Q  = round(c(modularity(fg), modularity(louv), modularity(walk)), 4),
+    Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
+  )
+}
+
+# combine list into one table
+final_comparison <- do.call(rbind, all_results)
+final_comparison
+>>>>>>> b78d14e34920b85431e3f00c1c3d5c71a504e95a
+```
+
+
+
+<<<<<<< HEAD
+=======
+# 6) Adjacency Matrix
+```{r}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
   
@@ -281,6 +329,7 @@ for(i in 1:4){
 
 
 
+>>>>>>> b78d14e34920b85431e3f00c1c3d5c71a504e95a
 ```{r}
 set.seed(42)
 for(i in 1:4){
@@ -296,6 +345,20 @@ for(i in 1:4){
         axes = FALSE)
 }
 ```
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> b78d14e34920b85431e3f00c1c3d5c71a504e95a
 
 
 
