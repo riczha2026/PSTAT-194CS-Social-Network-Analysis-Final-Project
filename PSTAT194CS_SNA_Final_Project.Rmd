@@ -305,10 +305,16 @@ plot(
 
 
 
+# 4) Network Metrics
+## DELETEMEMetrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
+<<<<<<< HEAD
 # Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
 ```{r, eval = TRUE, results='hide'}
+=======
+```{r, echo = FALSE, eval = TRUE}
+>>>>>>> 81e4d5ed7c19759bef9ee7fbbe7a3a9df04187ce
 for (i in 1:4) {
   cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
   
@@ -337,8 +343,20 @@ for (i in 1:4) {
   print(farthest_vertices(subgraphs[[i]]))
   
   # NODE LEVEL METRICS
+  def_marg <- c(5.1, 4.1, 4.1, 2.1)
   cat("NODE LEVEL METRICS", "\n", "Degree:", "\n")
   print(degree(subgraphs[[i]], mode = "in"))
+  par(mar= def_marg)
+  hist(degree(subgraphs[[1]], mode = "in"),
+       xlim = c(0, 40),
+     breaks=1:vcount(subgraphs[[1]])-1, 
+     main="Indegree Histogram")
+  par(mar= def_marg)
+  print(degree(subgraphs[[i]], mode = "out"))
+  hist(degree(subgraphs[[1]], mode = "out"),
+       xlim = c(0, 20),
+     breaks=1:vcount(subgraphs[[1]])-1, 
+     main="Outdegree Histogram")
   
   # Centrality
   cat("Betweenness Centrality:", "\n")
@@ -349,15 +367,36 @@ for (i in 1:4) {
   clr <- centr_clo(subgraphs[[i]], mode="all", normalized=T)
   print(centr_clo(subgraphs[[i]], mode="all", normalized=T))
   cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN", "\n")
-  sort(clr$res, decreasing = T, index.return = T) # REMOVE ME Can remove if we don't want to plot
+  sort(clr$res, decreasing = T, index.return = T)
   
   cat("Local Transitivity:", "\n")
   print(transitivity(subgraphs[[i]], type="local"))
-
-  # Edge Level
-  edge_betweenness(subgraphs[[i]])
 }
 ```
+
+## Interpretations
+
+Density is the proportion of edges in a network compared to how many possible edges could exist. A density of `r edge_density(subgraphs[[1]])` indicates a sparse network with a low proportion of connected nodes. This is reasonable for a Google web graph, as only somewhat-related websites would have links connecting one to the other. 
+
+Reciprocity is the proportion of edges from node A to B that have a corresponding edge traveling from B to A. This quantity tends to be higher in friendship networks where connections are mutual, and lower in follower networks due to their one-sided nature. Our value of `r reciprocity(subgraphs[[1]])` suggests a moderately low percentage of websites with mutual hyperlinks. 
+
+The dyad census takes all pairs of nodes and calculates the number of mutual connections, one-sided (asymmetric) connections, and null connections among all node pairs. We see that there are `r dyad_census(subgraphs[[1]])$mut` mutually connected nodes and almost 20000 unconnected nodes. This echoes the low density found from earlier, and is perfectly reasonable since hyperlinks should be relevant to the website it was found on. 
+
+Diameter measures the length of all shortest paths between nodes in the network and returns the maximum value, while average distance returns the mean. Higher values indicate more indirect connections. A mean distance of `r mean_distance(subgraphs[[1]])` is quite low, and suggests that connections seldom occur through a large number of intermediary websites.
+
+Global transitivity is the likelihood that two different neighbors of a node also share an edge. High transitivity indicates a network with tight-knit groups and more clustering. This is the case for our network, as a transitivity of `r transitivity(subgraphs[[1]])` shows the close-knit nature of websites with hyperlinks conencting each other, even on a global scale. 
+
+Degree is a node-level measure of how many edges connected to it. Since we are working with a directed graph, the number of in-edges and out-edges are distinct. There is a clear right skew in both histograms, which is expected for a web graph since most websites will have a handful of connections but few will have a great deal.
+
+Betweenness is a centrality measure that finds the frequency of a node existing within the shortest path between two other nodes. Nodes with high betweenness centrality are often critical points in the network that control information flow. In our network some nodes have a betweenness measure of over 1400 while others have a betweenness of 0. Pages like Yahoo or trusted encyclopedia pages likely had these high centralities, since they would have been referred to frequently by other sites even if they were not directly related.  
+
+Closeness is a centrality measure that measures the distance from a node to all other nodes. Important nodes will have a higher closeness since they interact with the other nodes more closely. The closeness values typically fall between 0.15 and 0.25, meaning that websites take around 4-7 hyperlinks to jump to the next website. The theme of close-knittedness between websites persists here; website hyperlinks will typically be relevant to the original website and most connections will not stray too far away. The low centralization of <0.15 suggests that centrality is distributed fairly evenly across the network, with very few websites dominating traffic.   
+
+Local transitivity is the smaller-scale measure of transitivity, and tells whether the data's clustering occurs frequently between small groups. Values frequently take values close to 1, which again shows that web graphs are tightly connected on a local level. Sites covering related topics will likely reference each other. 
+
+
+  
+  
 
 # 5) Community Detection
 
