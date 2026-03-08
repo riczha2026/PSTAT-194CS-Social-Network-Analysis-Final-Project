@@ -35,6 +35,7 @@ undirected_subgraphs <- lapply(subgraphs, function(g) as.undirected(g, mode = "c
 ## Step 4: Metrics - Structure & Connectivity
 
 ```{r connectivity}
+g <- subgraphs[[4]]
 density    <- round(edge_density(g), 4)
 strong_comp <- components(g, mode = "strong")$no
 weak_comp   <- components(g, mode = "weak")$no
