@@ -267,30 +267,30 @@ undirected_subgraphs <- vector("list", 4)
 for (i in 1:4){
   undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
 }
+# list to store all results
+all_results <- list()
 
-for (i in 1:4){
-  kc_fg <- cluster_fast_greedy(undirected_subgraphs[[i]])
-  cat("Algorithm: Fast Greedy\n")
-  cat("Number of communities:", length(kc_fg), "\n")
-  cat("Modularity Q =", round(modularity(kc_fg), 4), "\n")
-  cat("Community sizes:\n")
-  print(sizes(kc_fg))
+for (i in 1:4) {
+  g <- undirected_subgraphs[[i]]
   
-  kc_louv <- cluster_louvain(undirected_subgraphs[[i]])
-  cat("Algorithm: Louvain\n")
-  cat("Number of communities:", length(kc_louv), "\n")
-  cat("Modularity Q =", round(modularity(kc_louv), 4), "\n")
-  cat("Community sizes:\n")
-  print(sizes(kc_louv))
+  # run algs
+  fg   <- cluster_fast_greedy(g)
+  louv <- cluster_louvain(g)
+  walk <- cluster_walktrap(g)
   
-  kc_walk <- cluster_walktrap(undirected_subgraphs[[i]])
-  cat("Algorithm: Walktrap\n")
-  cat("Number of communities:", length(kc_walk), "\n")
-  cat("Modularity Q =", round(modularity(kc_walk), 4), "\n")
-  cat("Community sizes:\n")
-  print(sizes(kc_walk))
+  # store into list
+  all_results[[i]] <- data.frame(
+    Subgraph      = i,
+    Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+    N_communities = c(length(fg), length(louv), length(walk)),
+    Modularity_Q  = round(c(modularity(fg), modularity(louv), modularity(walk)), 4),
+    Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
+  )
 }
 
+# combine list into one table
+final_comparison <- do.call(rbind, all_results)
+final_comparison
 ```
 
 
