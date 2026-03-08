@@ -180,7 +180,7 @@ for (i in 1:4) {
   cat("Closeness Centrality:", "\n")
   clr <- centr_clo(subgraphs[[i]], mode="all", normalized=T)
   print(centr_clo(subgraphs[[i]], mode="all", normalized=T))
-  cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN")
+  cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN", "\n")
   sort(clr$res, decreasing = T, index.return = T) # REMOVE ME Can remove if we don't want to plot
   
   cat("Local Transitivity:", "\n")
