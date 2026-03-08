@@ -193,6 +193,43 @@ for (i in 1:4) {
 
 
 
+# 5) Community Detection
+
+Because the graph is directed, we need to convert it into an undirected graph for community detection. 
+```{r}
+# convert all into undirected graphs
+undirected_subgraphs <- vector("list", 4)
+for (i in 1:4){
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
+}
+
+for (i in 1:4){
+  kc_fg <- cluster_fast_greedy(undirected_subgraphs[[i]])
+  cat("Algorithm: Fast Greedy\n")
+  cat("Number of communities:", length(kc_fg), "\n")
+  cat("Modularity Q =", round(modularity(kc_fg), 4), "\n")
+  cat("Community sizes:\n")
+  print(sizes(kc_fg))
+  
+  kc_louv <- cluster_louvain(undirected_subgraphs[[i]])
+  cat("Algorithm: Louvain\n")
+  cat("Number of communities:", length(kc_louv), "\n")
+  cat("Modularity Q =", round(modularity(kc_louv), 4), "\n")
+  cat("Community sizes:\n")
+  print(sizes(kc_louv))
+  
+  kc_walk <- cluster_walktrap(undirected_subgraphs[[i]])
+  cat("Algorithm: Walktrap\n")
+  cat("Number of communities:", length(kc_walk), "\n")
+  cat("Modularity Q =", round(modularity(kc_walk), 4), "\n")
+  cat("Community sizes:\n")
+  print(sizes(kc_walk))
+}
+
+```
+
+
+
 
 
 
