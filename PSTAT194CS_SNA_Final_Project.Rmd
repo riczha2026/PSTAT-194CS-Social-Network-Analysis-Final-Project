@@ -303,8 +303,8 @@ plot(
 
 
 
-
-# Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
+# 4) Network Metrics
+## DELETEMEMetrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
 ```{r, echo = FALSE, eval = TRUE}
 for (i in 1:4) {
