@@ -161,22 +161,150 @@ bias.results
 
 # Visualization 
 
+## Subgraph 1
 ```{r}
-layouts = list(layout_with_fr, layout_with_kk, layout_with_mds)
+par(mfrow = c(1,3))
 
-for(i in 1:4){
-  for (j in 1:3){
-    plot(
-      subgraphs[[i]],
-      layout = layouts[[j]],
-      vertex.size = 4,
-      vertex.label = NA,
-      edge.arrow.size = 0.2,
-      main= paste("Subgraph", i,"- Layout", j)
-    )
-  }
-}
+plot(
+  subgraphs[[1]],
+  layout = layout_with_fr(subgraphs[[1]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 1 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[1]],
+  layout = layout_with_kk(subgraphs[[1]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 1 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[1]],
+  layout = layout_with_mds(subgraphs[[1]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 1 - MDS"
+)
 ```
+
+## Subgraph 2
+```{r}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[2]],
+  layout = layout_with_fr(subgraphs[[2]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 2- Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[2]],
+  layout = layout_with_kk(subgraphs[[2]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 2 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[2]],
+  layout = layout_with_mds(subgraphs[[2]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 2 - MDS"
+)
+```
+
+
+
+## Subgraph 3
+```{r}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[3]],
+  layout = layout_with_fr(subgraphs[[3]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 3 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[3]],
+  layout = layout_with_kk(subgraphs[[3]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 3 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[3]],
+  layout = layout_with_mds(subgraphs[[3]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 3 - MDS"
+)
+```
+
+
+
+
+## Subgraph 4
+```{r}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_fr(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_kk(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_mds(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - MDS"
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
@@ -272,6 +400,49 @@ final_comparison
 ```
 
 Looking at the results, we see that Walktrap generally detects more communities than the other 2 algorithms. All of the algorithms have high modularity greater than 0.7, suggesting that they found clear communities.
+
+
+# 6) Adjacency Matrix
+```{r}
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  image(adj_mat,
+        main = paste("Subgraph", i, "- Original Node Order"),
+        col = c("white", "steelblue"),
+        axes = FALSE)
+}
+# convert all into undirected graphs
+undirected_subgraphs <- vector("list", 4)
+for (i in 1:4){
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
+}
+# list to store all results
+all_results <- list()
+
+for (i in 1:4) {
+  g <- undirected_subgraphs[[i]]
+  
+  # run algs
+  fg   <- cluster_fast_greedy(g)
+  louv <- cluster_louvain(g)
+  walk <- cluster_walktrap(g)
+  
+  # store into list
+  all_results[[i]] <- data.frame(
+    Subgraph      = i,
+    Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+    N_communities = c(length(fg), length(louv), length(walk)),
+    Modularity_Q  = round(c(modularity(fg), modularity(louv), modularity(walk)), 4),
+    Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
+  )
+}
+
+# combine list into one table
+final_comparison <- do.call(rbind, all_results)
+final_comparison
+```
+
 
 
 # 6) Adjacency Matrix
