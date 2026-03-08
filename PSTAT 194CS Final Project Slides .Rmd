@@ -1,12 +1,32 @@
 ---
 title: "SNA Final Project Slides"
-subtitle: "PSTAT 194CS"
 author: "Richard Zhang, Toby Liu, Frank Wang, Max Peng"
-output: ioslides_presentation
+subtitle: PSTAT 194CS
+output:
+  ioslides_presentation: default
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(igraph)
+```
+
+```{r load-data, include=FALSE}
+library(igraph)
+edges <- read.table("web-Google.txt.gz", comment.char = "#")
+graph <- graph_from_data_frame(edges, directed = TRUE)
+
+set.seed(123)
+subgraphs <- list()
+for(i in 1:4){
+  start_node <- sample(V(graph), 1)
+  walk <- random_walk(graph, start = start_node, steps = 500, mode = "all")
+  nodes_sampled <- unique(walk)[1:200]
+  subgraphs[[i]] <- induced_subgraph(graph, nodes_sampled)
+}
+
+undirected_subgraphs <- lapply(subgraphs, function(g) as.undirected(g, mode = "collapse"))
 ```
 
 # Google Dataset
@@ -17,16 +37,26 @@ knitr::opts_chunk$set(echo = FALSE)
 - Edges (hyperlinks): 5105039
 - Source: Google Programming Contest (2002)
 
+## Step 6 - Adjacency Matrix
 
+- 200x200 matrix where each cell = 1 if a hyperlink exists between two pages
+- Original ordering: edges appear scattered, no visible structure
+- Goal: reorder nodes to reveal hidden patterns
 
-## Slide with R Output
+## Adjacency Matrix: Reordered by Community
 
-```{r cars, echo = TRUE}
-summary(cars)
-```
+- Nodes reordered by Louvain community membership
+- Diagonal blocks emerge — pages in the same community densely hyperlink each other
+- Subgraph 4 (1,608 edges) shows the clearest block structure
+- Off-diagonal sparsity confirms pages from different communities rarely link directly
 
-## Slide with Plot
-
-```{r pressure}
-plot(pressure)
+## Step 6 - Adjacency Matrix Reordered
+```{r, fig.height=5, fig.width=5, fig.align='center'}
+adj_mat <- as_adjacency_matrix(subgraphs[[4]], sparse = FALSE)
+kc_louv <- cluster_louvain(undirected_subgraphs[[4]])
+node_order <- order(membership(kc_louv))
+adj_mat_reordered <- adj_mat[node_order, node_order]
+image(adj_mat_reordered,
+      col = c("white", "steelblue"),
+      axes = FALSE)
 ```
