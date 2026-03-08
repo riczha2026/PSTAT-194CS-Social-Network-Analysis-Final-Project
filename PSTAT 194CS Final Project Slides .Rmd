@@ -29,7 +29,31 @@ for(i in 1:4){
 undirected_subgraphs <- lapply(subgraphs, function(g) as.undirected(g, mode = "collapse"))
 ```
 
+
 # Google Dataset
+
+## Step 4: Metrics - Structure & Connectivity
+
+```{r connectivity}
+density    <- round(edge_density(g), 4)
+strong_comp <- components(g, mode = "strong")$no
+weak_comp   <- components(g, mode = "weak")$no
+avg_path   <- round(mean(distances(g)[is.finite(distances(g))]), 3)
+recip      <- round(reciprocity(g), 3)
+trans      <- round(transitivity(g), 3)
+
+metrics <- data.frame(
+  Metric = c("Density", "Strong Components", "Weak Components",
+             "Avg Path Length", "Reciprocity", "Transitivity"),
+  Value = c(density, strong_comp, weak_comp, avg_path, recip, trans)
+)
+
+knitr::kable(metrics, align = c("l", "r"))
+```
+
+- **Low density** confirms sparse web graph structure
+- **Reciprocity** reflects one-way nature of hyperlinks
+- **Transitivity** indicates degree of local clustering
 
 ## Dataset Characteristics:
 - Type: Directed web graph
