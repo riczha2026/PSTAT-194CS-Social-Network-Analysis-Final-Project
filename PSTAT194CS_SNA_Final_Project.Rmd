@@ -295,7 +295,35 @@ for (i in 1:4){
 
 
 
+# 6) Adjacency Matrix
+```{r}
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  image(adj_mat,
+        main = paste("Subgraph", i, "- Original Node Order"),
+        col = c("white", "steelblue"),
+        axes = FALSE)
+}
+```
 
+
+
+```{r}
+set.seed(42)
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  kc_louv <- cluster_louvain(undirected_subgraphs[[i]])
+  node_order <- order(membership(kc_louv))
+  adj_mat_reordered <- adj_mat[node_order, node_order]
+  
+  image(adj_mat_reordered,
+        main = paste("Subgraph", i, "- Reordered by Community"),
+        col = c("white", "steelblue"),
+        axes = FALSE)
+}
+```
 
 
 
