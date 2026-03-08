@@ -175,7 +175,7 @@ for (i in 1:4) {
   # Centrality
   cat("Betweenness Centrality:", "\n")
   print(betweenness(subgraphs[[i]]))
-  cat(mean(is.nan(betweenness(subgraphs[[i]]))), "of the values are NaN")
+  cat(mean(is.nan(betweenness(subgraphs[[i]]))), "of the values are NaN", "\n")
   
   cat("Closeness Centrality:", "\n")
   clr <- centr_clo(subgraphs[[i]], mode="all", normalized=T)
