@@ -13,15 +13,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Dataset
+# Introduction
+The internet has become one of the most transformative and essential technologies in the early AI era. Serving as a universal learning tool, research platform, and the foundational infrastructure where AI continues to advance. With the rapid rise of AI, the internet has never been more critical, powering data pipelines, knowledge bases, and interconnected systems that modern machine learning systems depend on. Yet to truly understand the internet as it is today, it is valuable to examine it in its early development. Particularly in $2002$, during a turbulant times for the internet as it marked the aftermath of the dotcom bubble. Which led to many internet-based companies to rise and fall almost instantly. Fundamentally reshaping how the internet is today. During volatile periods it saw search engines like Google to emerge victorious, as it has become one of the world's most prominent and widely used web search platforms. Understanding how web pages were interconnected during this era not only reveals the structural properties of the early internet but also sheds light on how information flowed, how communities of related pages formed, and how search engines like Google first learned to navigate and rank content in the wake of one of the most dramatic technological disruptions in modern history.
 
-# Loading and Preparing Data
-```{r}
+We will be conducting a social network analysis to the web-Google dataset. Which is a directed web graph released by Google in $2002$ as part of the Google Programming Contest. Made publicly available through the Stanford Network Analysis Project (SNAP). Where the dataset comprises of $875713$ webpages (nodes) and $5105039$ directed hyperlinks (edges) capturing a rich and large-scale portait of the internet as it existed in $2002$. 
+
+
+```{r, echo=FALSE}
+library(igraph)
+
 url = "https://snap.stanford.edu/data/web-Google.txt.gz"
 download.file(url, destfile = "web-Google.txt.gz", mode = "wb")
-```
-```{r}
-library(igraph)
 
 edges = read.table(
   "web-Google.txt.gz",
@@ -32,25 +34,16 @@ graph = graph_from_data_frame(edges, directed=TRUE)
 ```
 
 # Understanding our Network
-```{r}
+
+After loading our dataset, we will get some basic information regarding our network.
+```{r, echo=FALSE}
 cat("Number of Nodes:",vcount(graph),"\n")
 cat("Number of Edges:",ecount(graph))
-```
-
-```{r}
 is_directed(graph)
-```
-
-
-
-```{r}
 is_weighted(graph)
-```
-
-
-```{r}
 summary(graph)
 ```
+
 
 
 
@@ -62,7 +55,7 @@ summary(graph)
 
 
 ## Code Implemenation
-```{r, eval=FALSE}
+```{r, echo=FALSE}
 set.seed(123)
 
 sub.network = lapply(1:4, function(x){
@@ -71,7 +64,7 @@ sub.network = lapply(1:4, function(x){
 ```
 
 ## Checking Subgraphs
-```{r, eval=FALSE}
+```{r, echo=FALSE}
 sub.network[[1]]
 sub.network[[2]]
 sub.network[[3]]
