@@ -1,6 +1,8 @@
 ---
 title: "PSTAT194CS_SNA_Final_Project"
-output: pdf_document
+output:
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
