@@ -138,7 +138,58 @@ for(i in 1:4){
 }
 ```
 
+# Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
 
+```{r, eval = TRUE}
+for (i in 1:4) {
+  cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
+  
+  cat("Density:", "\n") 
+  print(edge_density(subgraphs[[i]]))
+
+  # Reciprocity
+  cat("Reciprocity:", "\n")
+  print(reciprocity(subgraphs[[i]]))
+
+  # Dyad Census 
+  cat("Pairwise Relationships:", "\n")
+  print(dyad_census(subgraphs[[i]]))
+
+  # Transitivity 
+  cat("Transitivity:", "\n")
+  print(transitivity(subgraphs[[i]]))
+  
+  # Average distance between nodes
+  cat("Mean Distance Between Nodes:", "\n")
+  print(mean_distance(subgraphs[[i]]))
+
+  # Diameter
+  cat("Diameter and the Associated Nodes:", "\n")
+  print(diameter(subgraphs[[i]], weights = NA))
+  print(farthest_vertices(subgraphs[[i]]))
+  
+  # NODE LEVEL METRICS
+  cat("NODE LEVEL METRICS", "\n", "Degree:", "\n")
+  print(degree(subgraphs[[i]], mode = "in"))
+  
+  # Centrality
+  cat("Betweenness Centrality:", "\n")
+  print(betweenness(subgraphs[[i]]))
+  cat(mean(is.nan(betweenness(subgraphs[[i]]))), "of the values are NaN")
+  
+  cat("Closeness Centrality:", "\n")
+  clr <- centr_clo(subgraphs[[i]], mode="all", normalized=T)
+  print(centr_clo(subgraphs[[i]], mode="all", normalized=T))
+  cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN")
+  sort(clr$res, decreasing = T, index.return = T) # REMOVE ME Can remove if we don't want to plot
+  
+  cat("Local Transitivity:", "\n")
+  print(transitivity(subgraphs[[i]], type="local"))
+
+  # Edge Level
+  edge_betweenness(subgraphs[[i]])
+}
+```
 
 
 
