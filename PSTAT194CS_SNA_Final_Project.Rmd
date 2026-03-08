@@ -85,7 +85,7 @@ sub.network[[4]]
 
 
 
-## New Implementation
+## Random Walk New Implementation
 ```{r}
 set.seed(123)
 
@@ -93,20 +93,20 @@ subgraphs <- list()
 
 for(i in 1:4){
 
-  repeat{
+  start_node <- sample(V(graph), 1)
 
-    seed <- sample(V(graph), 1)
+  walk <- random_walk(graph,
+                      start = start_node,
+                      steps = 500,
+                      mode = "all")
 
-    neighbors_nodes <- ego(graph, order = 2, nodes = seed, mode = "all")[[1]]
+  nodes_sampled <- unique(walk)
 
-    if(length(neighbors_nodes) >= 200) break
-  }
+  nodes_sampled <- nodes_sampled[1:200]
 
-  sample_nodes <- sample(neighbors_nodes, 200)
+  subgraphs[[i]] <- induced_subgraph(graph, nodes_sampled)
 
-  subgraphs[[i]] <- induced_subgraph(graph, sample_nodes)
 }
-
 
 ```
 
@@ -227,6 +227,76 @@ for (i in 1:4){
 }
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 5) Community Detection
+
+Because the graph is directed, we need to convert it into an undirected graph for community detection. 
+```{r}
+# convert all into undirected graphs
+undirected_subgraphs <- vector("list", 4)
+for (i in 1:4){
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
+}
+
+for (i in 1:4){
+  kc_fg <- cluster_fast_greedy(undirected_subgraphs[[i]])
+  cat("Algorithm: Fast Greedy\n")
+  cat("Number of communities:", length(kc_fg), "\n")
+  cat("Modularity Q =", round(modularity(kc_fg), 4), "\n")
+  cat("Community sizes:\n")
+  print(sizes(kc_fg))
+  
+  kc_louv <- cluster_louvain(undirected_subgraphs[[i]])
+  cat("Algorithm: Louvain\n")
+  cat("Number of communities:", length(kc_louv), "\n")
+  cat("Modularity Q =", round(modularity(kc_louv), 4), "\n")
+  cat("Community sizes:\n")
+  print(sizes(kc_louv))
+  
+  kc_walk <- cluster_walktrap(undirected_subgraphs[[i]])
+  cat("Algorithm: Walktrap\n")
+  cat("Number of communities:", length(kc_walk), "\n")
+  cat("Modularity Q =", round(modularity(kc_walk), 4), "\n")
+  cat("Community sizes:\n")
+  print(sizes(kc_walk))
+}
+
+```
+
+
+
+
+
 
 
 
