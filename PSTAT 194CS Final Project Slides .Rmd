@@ -7,6 +7,18 @@ output:
   beamer_presentation: default
 ---
 
+
+
+
+
+
+
+
+
+# Google Dataset
+
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(igraph)
@@ -29,8 +41,6 @@ for(i in 1:4){
 undirected_subgraphs <- lapply(subgraphs, function(g) as.undirected(g, mode = "collapse"))
 ```
 
-
-# Google Dataset
 
 ## Step 4: Metrics - Structure & Connectivity
 
@@ -56,11 +66,6 @@ knitr::kable(metrics, align = c("l", "r"))
 - **Reciprocity** reflects one-way nature of hyperlinks
 - **Transitivity** indicates degree of local clustering
 
-## Dataset Characteristics:
-- Type: Directed web graph
-- Nodes (webpages): 875713
-- Edges (hyperlinks): 5105039
-- Source: Google Programming Contest (2002)
 
 ## Step 6 - Adjacency Matrix
 
