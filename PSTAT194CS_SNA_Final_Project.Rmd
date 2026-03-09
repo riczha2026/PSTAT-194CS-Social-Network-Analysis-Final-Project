@@ -12,14 +12,41 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 ```
-
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  
+  {\LARGE \textbf{A Random Walk Through the Web}\par}
+  {\LARGE \textbf{Network Analysis of the Google Web Graph}\par}
+  
+  \vspace{1.5cm}
+  
+  {\large Richard Zhang, Max Peng, Toby Liu, Frank Wang\par}
+  
+  \vspace{0.5cm}
+  
+  {\normalsize PSTAT 194CS — Social Network Analysis\par}
+  {\normalsize University of California, Santa Barbara\par}
+  
+  \vspace{0.5cm}
+  
+  {\normalsize March 2026\par}
+  
+  \vfill
+  
+\end{titlepage}
 # Introduction
-The internet has become one of the most transformative and essential technologies in the early AI era. Serving as a universal learning tool, research platform, and the foundational infrastructure where AI continues to advance. With the rapid rise of AI, the internet has never been more critical, powering data pipelines, knowledge bases, and interconnected systems that modern machine learning systems depend on. Yet to truly understand the internet as it is today, it is valuable to examine it in its early development. Particularly in $2002$, during a turbulant times for the internet as it marked the aftermath of the dotcom bubble. Which led to many internet-based companies to rise and fall almost instantly. Fundamentally reshaping how the internet is today. During volatile periods it saw search engines like Google to emerge victorious, as it has become one of the world's most prominent and widely used web search platforms. Understanding how web pages were interconnected during this era not only reveals the structural properties of the early internet but also sheds light on how information flowed, how communities of related pages formed, and how search engines like Google first learned to navigate and rank content in the wake of one of the most dramatic technological disruptions in modern history.
+The internet has become one of the most transformative and essential technologies in the early AI era. Serving as a universal learning tool, research platform, and the foundational infrastructure where AI continues to advance. With the rapid rise of AI, the internet has never been more critical, powering data pipelines, knowledge bases, and interconnected systems that modern machine learning systems depend on. Yet to truly understand the internet as it is today, it is valuable to examine it in its early development. Particularly in $2002$, during a turbulent times for the internet as it marked the aftermath of the dotcom bubble. Which led to many internet-based companies to rise and fall almost instantly. Fundamentally reshaping how the internet is today. 
 
-We will be conducting a social network analysis to the web-Google dataset. Which is a directed web graph released by Google in $2002$ as part of the Google Programming Contest. Made publicly available through the Stanford Network Analysis Project (SNAP). Where the dataset comprises of $875713$ webpages (nodes) and $5105039$ directed hyperlinks (edges) capturing a rich and large-scale portait of the internet as it existed in $2002$. 
+Understanding how web pages were interconnected during this era not only reveals the structural properties of the early internet but also sheds light on how information flowed, how communities of related pages formed, and how search engines like Google first learned to navigate and rank content in the wake of one of the most dramatic technological disruptions in modern history.
+
+## Dataset Description
+
+We will be conducting a social network analysis to the web-Google dataset. Which is a directed web graph released by Google in $2002$ as part of the Google Programming Contest. Made publicly available through the Stanford Network Analysis Project (SNAP). Where the dataset comprises of $875713$ webpages (vertices) and $5105039$ directed hyperlinks (edges) capturing a rich and large-scale portait of the internet as it existed in $2002$. In which, the vertices represent individual web pages that were collected from the internet in $2002$. With each node corresponding to a unique webpage labeled by a numeric id, and edges representing directed hyperlinks between webpages.
 
 
 ```{r, echo=FALSE}
+#Loading and Preparing Dataset
 library(igraph)
 
 url = "https://snap.stanford.edu/data/web-Google.txt.gz"
@@ -33,15 +60,30 @@ edges = read.table(
 graph = graph_from_data_frame(edges, directed=TRUE)
 ```
 
-# Understanding our Network
-
-After loading our dataset, we will get some basic information regarding our network.
 ```{r, echo=FALSE}
-cat("Number of Nodes:",vcount(graph),"\n")
-cat("Number of Edges:",ecount(graph))
-is_directed(graph)
-is_weighted(graph)
-summary(graph)
+avg.degree= mean(degree(graph))
+max.degree = max(degree(graph))
+density = edge_density(graph)
+
+Dataset.info= data.frame(
+  Property = c(
+    "Nodes", "Edges", "Directionality", "Weighted", "Self-loops", " Density",
+    "Mean Degree","Max Degree"
+  ),
+  Value = c(
+    vcount(graph),
+    ecount(graph),
+    ifelse(is_directed(graph), "Yes","No"),
+    ifelse(is_weighted(graph), "Yes","No"),
+    ifelse(any(which_loop(graph)), "Yes","No"),
+    round(density,7),
+    round(avg.degree,2),
+    max.degree
+  )
+)
+knitr::kable(Dataset.info,
+             caption = "Basic Network Elements of the web-Google Network",
+             align = c("l","l"))
 ```
 
 
@@ -49,38 +91,37 @@ summary(graph)
 
 
 
+## Objectives:
+The objectives of this analysis are to:
+* Generate representative subgraphs of the Google Web graph using random walk sampling to deal with sparsity limitations of induced subgraphs
+* Look into sampling bias by comparing degree distributions between the sampled subgraph and full network using the Kolmpgorov-Smirnov test
+* Visualize the network structure of our subgraphs with the Fruchterman-Reingold, Kamada-Kawai, and Multidimensional Scaling (MDS) layout to reveal structural and connectivity patterns
+* Compute and interpret network-level metrics (i.e. density, reciprocity, dyad census, transitivity, diameter, and mean distance) to capture the overall structure of the web graph 
+* Compute and interpret node-level metrics (i.e. in-degree, out-degree, betweenness centrality, closness centrality, and local transitivity) to identify influential web pages within the network
+* Detect and compare communities using Fast-Greedy, Louvain, Walktrap algorithms and evaluate their results using molecularity scores and community sizes
+* Examine the adjacency matrix of each subgraphs in their original and reordered form to confirm the presence of community strucutre and identify structural patterns.
 
-# Creating Subgraphs of 200-nodes
+# Methodology
 
+## Creating Subgraphs
 
-
-## Code Implemenation
+We will first generate four induced subgraphs by "purely" randomly sample $200$ nodes from the full network just using the `induced_subgraph()`. 
 ```{r, echo=FALSE}
 set.seed(123)
 
 sub.network = lapply(1:4, function(x){
   induced_subgraph(graph, sample(V(graph),200))
 })
-```
-
-## Checking Subgraphs
-```{r, echo=FALSE}
 sub.network[[1]]
 sub.network[[2]]
 sub.network[[3]]
 sub.network[[4]]
 ```
+However, we can notice that from the results above, our subgraphs virtually do not have any edges. This could be due to the fact that the web-Google graph is extremely sparse (density $\approx$ `r round(edge_density(graph),7)`). This would make it difficult to get any meaningful analysis. 
 
+To resolve this issue, we will utilize the concept of random walk to sample. Where we would use igraph's built in `random_walk()` function. Beginning with a randomly chosen seed node, a random walk proceeds for $500$ steps by following the network’s edges and recording the nodes encountered. The first $200$ unique nodes visited during this process are then used to construct each induced subgraph. This method helps ensure that the resulting subgraphs are well connected and contain many edges, maintaining the local hyperlink structure of the web.
 
-
-
-
-
-
-
-
-
-## Random Walk New Implementation
+### Code Implementation
 ```{r}
 set.seed(123)
 
@@ -96,21 +137,29 @@ for(i in 1:4){
   nodes_sampled <- nodes_sampled[1:200]
   subgraphs[[i]] <- induced_subgraph(graph, nodes_sampled)
 }
+
+
 ```
 
-## Checking our Subgraphs
-```{r}
-subgraphs[[1]]
-subgraphs[[2]]
-subgraphs[[3]]
-subgraphs[[4]]
-```
+```{r,echo=FALSE}
 
+subgraph.info = data.frame(
+  Subgraph = paste("Subgraph", 1:4),
+  Nodes = sapply(subgraphs, vcount),
+  Edges = sapply(subgraphs, ecount)
+)
+
+knitr::kable(subgraph.info,
+             caption = "Summary of Random Walk Subgraphs",
+             align = c("l","r","r"))
+```
+Based on the results above, we can see that our random walk sampling helped with providing us with edges for our all four of our subgraphs.
 
 ## Checking on Sampling Bias
+
+Though our subgraphs have edges using random walk sampling, there are still sampling biases that we need to consider. 
 ```{r}
 deg.full = degree(graph)
-
 
 bias.results = data.frame(
   Subgraph = character(),
@@ -137,25 +186,22 @@ for (i in 1:4){
       )
     )
 }
-bias.results
+knitr::kable(bias.results,
+             caption = "Sampling Bias Assessment of Random Walk Subgraphs",
+             col.names = c("Subgraph", "Nodes", "Edges", 
+                           "Mean Degree", "Median Degree", "KS P-Value"),
+             align = c("l", "r", "r", "r", "r", "r"))
 ```
+By comparing the degree distributions of each subgraph against the full network using summary statistics and the Kolmogorov-Smirnov (KS) test. Looking into our mean degree across subgraphs, we can notice that they range from $8.42$ to $16.08$. Where our median degree range from $5$ to $12$. Which suggests that some walks landed in denser regions of the network than others. Particularly subgraph $4$. As it is considerably denser than the other subgraphs. Indicating that the random walk from subgraph $4$ traversed a more tightly connected neighborhood of the web graph. This is important as we will be utilizing subgraph $4$ to observe network metrics later in our report. 
 
+When observing our KS test p-values, we can see that all four subgraphs result in extremely small p-values. Indicating that a statistically significant difference between the subgraphs and the full network degree distributions. This is not bad as this is expected given the massive size difference between $200$ nodes and the full roughly $876000$ nodes. With this scale the KS test is extremely sensitive. Flagging even the smallest differences as significant. Thus our random walk sampled subgraphs are still suitable for structural analysis. As it still preserves the local connectivity patterns of the web graph rather than attempting to replocate irs global degree distribution. 
 
+# Analysis
 
+## Visualization 
 
-
-
-
-
-
-
-
-
-
-# Visualization 
-
-## Subgraph 1
-```{r}
+### Subgraph 1
+```{r, echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -186,8 +232,8 @@ plot(
 )
 ```
 
-## Subgraph 2
-```{r}
+### Subgraph 2
+```{r,echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -220,8 +266,8 @@ plot(
 
 
 
-## Subgraph 3
-```{r}
+### Subgraph 3
+```{r,echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -255,8 +301,8 @@ plot(
 
 
 
-## Subgraph 4
-```{r}
+### Subgraph 4
+```{r,echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -289,16 +335,7 @@ plot(
 
 
 
-
-
-
-
-
-
-
-
-
-# 4) Network Metrics
+## Network Metrics
 
 ```{r, echo = FALSE, eval = TRUE}
 cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
@@ -358,7 +395,7 @@ cat("Local Transitivity:", "\n")
 print(transitivity(subgraphs[[4]], type="local"))
 ```
 
-## Interpretations
+### Interpretations
 
 Density is the proportion of edges in a network compared to how many possible edges could exist. A density of `r edge_density(subgraphs[[4]])` indicates a sparse network with a low proportion of connected nodes. This is reasonable for a Google web graph, as only somewhat-related websites would have links connecting one to the other. 
 
@@ -383,7 +420,7 @@ Local transitivity is the smaller-scale measure of transitivity, and tells wheth
   
   
 
-# 5) Community Detection
+## Community Detection
 
 Because the community detection algorithms want an undirected graph and our current graph is directed, we need to convert it into an undirected graph first. Then, we can run all of the community detection algorithms on each subgraph and store it all inside one dataframe. We will also store the results inside a comunity objects data structure so that we can use the results later.
 
@@ -426,7 +463,7 @@ final_comparison
 Looking at the results, we see that Walktrap generally detects more communities than the other 2 algorithms. All of the algorithms have high modularity greater than 0.7, suggesting that they found clear communities.
 
 
-# 6) Adjacency Matrix
+## Adjacency Matrix
 ```{r}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
@@ -469,7 +506,7 @@ final_comparison
 
 
 
-# 6) Adjacency Matrix
+## Adjacency Matrix
 ```{r}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
@@ -501,7 +538,7 @@ for(i in 1:4){
 The adjacency matrix of each 200-node subgraph was examined to identify structural patterns in the Google web graph. Each entry in the matrix represents the presence of a directed hyperlink between two pages. In the original node ordering, edges appear scattered with no discernible pattern, reflecting the arbitrary order in which nodes were sampled.
 To reveal underlying structure, nodes were reordered by Louvain community membership. After reordering, clear diagonal block patterns emerged, particularly in Subgraph 4 which contained 1,608 edges. Each block along the diagonal represents a group of web pages that densely hyperlink to one another, likely corresponding to topically related pages. The sparsity off the diagonal indicates that pages from different communities rarely link directly to each other. This visual confirmation aligns with the community detection results, supporting the presence of meaningful cluster structure within the Google web graph.
 
-# 7) Reordering Nodes for Community Detection
+## Reordering Nodes for Community Detection
 
 As we see above, all of the nodes are in one connected component. As such, this step is essentially the same as above. We will reorder the adjacency matrices for all of the remaining subgraphs as well.
 
@@ -542,11 +579,14 @@ There are two main shapes we see in the adjacency matrix. First is this sparse L
 
 
 
+# Results
 
 
 
 
 
+
+# Conclusion
 
 
 
@@ -568,7 +608,12 @@ There are two main shapes we see in the adjacency matrix. First is this sparse L
 
 \newpage
 
-## Appendix
+# References
+
+
+\newpage
+
+# Appendix
 
 ```{r appendix-code, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
