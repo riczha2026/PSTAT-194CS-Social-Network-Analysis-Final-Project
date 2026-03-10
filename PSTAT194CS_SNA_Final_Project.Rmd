@@ -392,62 +392,6 @@ metrics_df <- data.frame(
 
 knitr::kable(metrics_df, align = c("l", "r"))
 ```
-```{r indegree-histogram}
-par(mar = c(5.1, 4.1, 4.1, 2.1))
-hist(degree(g, mode = "in"),
-     xlim = c(0, 40),
-     breaks = 1:vcount(g)-1,
-     main = "In-Degree Histogram",
-     xlab = "In-Degree")
-```
-```{r indegree-peaks-histogram}
-par(mar = c(5.1, 4.1, 4.1, 2.1))
-hist(degree(g, mode = "in"),
-     xlim = c(0, 70),
-     breaks = 40,
-     main = "In-Degree Distribution with Peaks",
-     xlab = "In-Degree")
-abline(v = c(15, 29, 35), col = "red", lty = 2, lwd = 2)
-text(x = c(15, 29, 35),
-     y = par("usr")[4] * 0.9,
-     labels = c("Peak: 15", "Peak: 29", "Peak: 35"),
-     col = "red", srt = 90,
-     adj = 1)
-```
-```{r outdegree-histogram}
-par(mar = c(5.1, 4.1, 4.1, 2.1))
-hist(degree(g, mode = "out"),
-     xlim = c(0, 40),
-     breaks = 1:vcount(g)-1,
-     main = "Out-Degree Histogram",
-     xlab = "Out-Degree")
-```
-
-## Betweenness (per node)
-```{r}
-print(betweenness(g))
-```
-
-## Closeness Centrality (per node)
-
-```{r}
-clr <- centr_clo(g, mode = "all", normalized = TRUE)
-print(sort(clr$res, decreasing = TRUE, index.return = TRUE))
-```
-
-## Local Transitivity (per node)
-
-```{r}
-print(transitivity(g, type = "local"))
-```
-
-## Farthest Vertices
-
-```{r}
-print(farthest_vertices(g))
-```
-
-### Interpretations
 
 Density is the proportion of edges in a network compared to how many possible edges could exist. A density of `r edge_density(subgraphs[[4]])` indicates a sparse network with a low proportion of connected nodes. This is reasonable for a Google web graph, as only somewhat-related websites would have links connecting one to the other. 
 
@@ -458,19 +402,55 @@ Diameter measures the length of all shortest paths between nodes in the network 
 
 Global transitivity is the likelihood that two different neighbors of a node also share an edge. High transitivity indicates a network with tight-knit groups and more clustering. This is the case for our network, as a transitivity of `r transitivity(subgraphs[[4]])` shows the close-knit nature of websites with hyperlinks conencting each other, even on a global scale. 
 
+```{r indegree-histogram}
+par(mar = c(5.1, 4.1, 4.1, 2.1))
+hist(degree(g, mode = "in"),
+     xlim = c(0, 40),
+     breaks = 1:vcount(g)-1,
+     main = "In-Degree Histogram",
+     xlab = "In-Degree")
+```
+```{r outdegree-histogram}
+par(mar = c(5.1, 4.1, 4.1, 2.1))
+hist(degree(g, mode = "out"),
+     xlim = c(0, 40),
+     breaks = 1:vcount(g)-1,
+     main = "Out-Degree Histogram",
+     xlab = "Out-Degree")
+```
+
 Degree is a node-level measure of how many edges connected to it. Since we are working with a directed graph, the number of in-edges and out-edges are distinct. There is a clear right skew in both histograms, which is expected for a web graph since most websites will have a handful of connections but few will have a great deal.
 
+#### Betweenness (per node)
+```{r}
+print(betweenness(g))
+```
 Betweenness is a centrality measure that finds the frequency of a node existing within the shortest path between two other nodes. Nodes with high betweenness centrality are often critical points in the network that control information flow. In our network some nodes have a betweenness measure of over 1400 while others have a betweenness of 0. Pages like Yahoo or trusted encyclopedia pages likely had these high centralities, since they would have been referred to frequently by other sites even if they were not directly related.  
 
-Closeness is a centrality measure that measures the distance from a node to all other nodes. Important nodes will have a higher closeness since they interact with the other nodes more closely. The closeness values typically fall between 0.15 and 0.25, meaning that websites take around 4-7 hyperlinks to jump to the next website. The theme of close-knittedness between websites persists here; website hyperlinks will typically be relevant to the original website and most connections will not stray too far away. The low centralization of <0.15 suggests that centrality is distributed fairly evenly across the network, with very few websites dominating traffic.   
+#### Closeness Centrality (per node)
 
+```{r}
+clr <- centr_clo(g, mode = "all", normalized = TRUE)
+print(sort(clr$res, decreasing = TRUE, index.return = TRUE))
+```
+Closeness is a centrality measure that measures the distance from a node to all other nodes. Important nodes will have a higher closeness since they interact with the other nodes more closely. The closeness values typically fall between 0.15 and 0.25, meaning that websites take around 4-7 hyperlinks to jump to the next website. The theme of close-knittedness between websites persists here; website hyperlinks will typically be relevant to the original website and most connections will not stray too far away. The low centralization of <0.15 suggests that centrality is distributed fairly evenly across the network, with very few websites dominating traffic. 
+
+#### Local Transitivity (per node)
+
+```{r}
+print(transitivity(g, type = "local"))
+```
 Local transitivity is the smaller-scale measure of transitivity, and tells whether the data's clustering occurs frequently between small groups. Values frequently take values close to 1, which again shows that web graphs are tightly connected on a local level. Sites covering related topics will likely reference each other. 
 
+#### Farthest Vertices
+
+```{r}
+print(farthest_vertices(g))
+```
 
 
 
-  
-  
+
 
 ## Community Detection
 
