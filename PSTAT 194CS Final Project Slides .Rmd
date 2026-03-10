@@ -414,3 +414,20 @@ image(adj_mat_reordered,
       col = c("white", "steelblue"),
       axes = FALSE)
 ```
+
+
+
+
+## Conclusion 
+
+
+
+
+
+# Thank You
+
+
+
+
+
+
