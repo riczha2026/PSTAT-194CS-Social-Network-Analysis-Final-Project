@@ -1,8 +1,9 @@
 ---
-title: "A Random Walk Through the Web: Network Analysis of the Google Web Graph"
+title: 'A Random Walk Through the Web: Network Analysis of the Google Web Graph'
 author: "Richard Zhang, Toby Liu, Frank Wang, Max Peng"
 subtitle: PSTAT 194CS
 output:
+  beamer_presentation: default
   ioslides_presentation:
     widescreen: true
     smaller: true
@@ -419,7 +420,12 @@ image(adj_mat_reordered,
       ylab = "Node (reordered)")
 ```
 
-
+## Reordering Nodes by Connected Component
+- All 200 nodes in each subgraph belong to a single connected component
+- Reordering by component yields identical results to community reordering
+- Two patterns visible in reordered matrices:
+  - **L-shape**: central hub page linking to many communities (e.g. Wikipedia-like pages)
+  - **Solid block**: tightly interconnected pages, likely subpages of the same site
 
 
 ## Conclusion 
