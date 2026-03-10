@@ -359,62 +359,92 @@ Lastly for subgraph $4$, we can also clearly notice that we have two dense clust
 ## Network Metrics
 Now, we will focus our analysis on the network metrics of subgraph $4$ (as mentioned previously) in order to quantitatively examine the structural properties suggested from the visualizations we have examined. While the layouts provide useful qualitative insights into clustering, bridging node, and branching paths, we can gain further insights by measuring those characteristics. Such as density, reciprocity, transitivity, path lengths, clustering behavior, and importance of individual nodes within subgraph $4$. 
 
-```{r, echo = FALSE, eval = TRUE}
-cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
+```{r network-metrics-table}
+g <- subgraphs[[4]]
+metrics_df <- data.frame(
+  Metric = c(
+    "Density",
+    "Reciprocity",
+    "Transitivity",
+    "Mean Distance",
+    "Diameter",
+    "Dyad Census: Mutual",
+    "Dyad Census: Asymmetric",
+    "Dyad Census: Null",
+    "Closeness Centralization",
+    "Betweenness NaN Proportion",
+    "Closeness NaN Proportion"
+  ),
+  Value = c(
+    round(edge_density(g), 4),
+    round(reciprocity(g), 4),
+    round(transitivity(g), 4),
+    round(mean_distance(g), 4),
+    diameter(g, weights = NA),
+    dyad_census(g)$mut,
+    dyad_census(g)$asym,
+    dyad_census(g)$null,
+    round(centr_clo(g, mode = "all", normalized = TRUE)$centralization, 4),
+    round(mean(is.nan(betweenness(g))), 4),
+    round(mean(is.nan(closeness(g))), 4)
+  )
+)
 
-cat("Density:", "\n") 
-print(edge_density(subgraphs[[4]]))
-
-# Reciprocity
-cat("Reciprocity:", "\n")
-print(reciprocity(subgraphs[[4]]))
-
-# Dyad Census 
-cat("Pairwise Relationships:", "\n")
-print(dyad_census(subgraphs[[4]]))
-
-# Transitivity 
-cat("Transitivity:", "\n")
-print(transitivity(subgraphs[[4]]))
-
-# Average distance between nodes
-cat("Mean Distance Between Nodes:", "\n")
-print(mean_distance(subgraphs[[4]]))
-
-# Diameter
-cat("Diameter and the Associated Nodes:", "\n")
-print(diameter(subgraphs[[4]], weights = NA))
-print(farthest_vertices(subgraphs[[4]]))
-
-# NODE LEVEL METRICS
-def_marg <- c(5.1, 4.1, 4.1, 2.1)
-cat("NODE LEVEL METRICS", "\n", "Degree:", "\n")
-print(degree(subgraphs[[4]], mode = "in"))
-par(mar= def_marg)
-hist(degree(subgraphs[[4]], mode = "in"),
+knitr::kable(metrics_df, align = c("l", "r"))
+```
+```{r indegree-histogram}
+par(mar = c(5.1, 4.1, 4.1, 2.1))
+hist(degree(g, mode = "in"),
      xlim = c(0, 40),
-   breaks=1:vcount(subgraphs[[4]])-1, 
-   main="Indegree Histogram")
-par(mar= def_marg)
-print(degree(subgraphs[[4]], mode = "out"))
-hist(degree(subgraphs[[4]], mode = "out"),
-     xlim = c(0, 20),
-   breaks=1:vcount(subgraphs[[4]])-1, 
-   main="Outdegree Histogram")
+     breaks = 1:vcount(g)-1,
+     main = "In-Degree Histogram",
+     xlab = "In-Degree")
+```
+```{r indegree-peaks-histogram}
+par(mar = c(5.1, 4.1, 4.1, 2.1))
+hist(degree(g, mode = "in"),
+     xlim = c(0, 70),
+     breaks = 40,
+     main = "In-Degree Distribution with Peaks",
+     xlab = "In-Degree")
+abline(v = c(15, 29, 35), col = "red", lty = 2, lwd = 2)
+text(x = c(15, 29, 35),
+     y = par("usr")[4] * 0.9,
+     labels = c("Peak: 15", "Peak: 29", "Peak: 35"),
+     col = "red", srt = 90,
+     adj = 1)
+```
+```{r outdegree-histogram}
+par(mar = c(5.1, 4.1, 4.1, 2.1))
+hist(degree(g, mode = "out"),
+     xlim = c(0, 40),
+     breaks = 1:vcount(g)-1,
+     main = "Out-Degree Histogram",
+     xlab = "Out-Degree")
+```
 
-# Centrality
-cat("Betweenness Centrality:", "\n")
-print(betweenness(subgraphs[[4]]))
-cat(mean(is.nan(betweenness(subgraphs[[4]]))), "of the values are NaN", "\n")
+## Betweenness (per node)
+```{r}
+print(betweenness(g))
+```
 
-cat("Closeness Centrality:", "\n")
-clr <- centr_clo(subgraphs[[4]], mode="all", normalized=T)
-print(centr_clo(subgraphs[[4]], mode="all", normalized=T))
-cat(mean(is.nan(closeness(subgraphs[[4]]))), "of the values are NaN", "\n")
-sort(clr$res, decreasing = T, index.return = T)
+## Closeness Centrality (per node)
 
-cat("Local Transitivity:", "\n")
-print(transitivity(subgraphs[[4]], type="local"))
+```{r}
+clr <- centr_clo(g, mode = "all", normalized = TRUE)
+print(sort(clr$res, decreasing = TRUE, index.return = TRUE))
+```
+
+## Local Transitivity (per node)
+
+```{r}
+print(transitivity(g, type = "local"))
+```
+
+## Farthest Vertices
+
+```{r}
+print(farthest_vertices(g))
 ```
 
 ### Interpretations
