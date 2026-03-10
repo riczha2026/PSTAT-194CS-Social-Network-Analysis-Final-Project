@@ -217,7 +217,7 @@ knitr::kable(packages,
 # Analysis
 
 ## Visualization 
-Now to get a better understanding of our subgraphs that we have created, we will visualize them using three various layouts available in the `igraph` package. With those three layouts being **Fruchterman-Reingold (FR)**, **Kamada-Kawai (KK)**, and  **Multidimensional Scaling (MDS)**. In which these layouts use different approaches to position nodes in a two-dimensional space. Giving a different perspective on our subgraph network structure. 
+Now to get a better understanding of our subgraphs that we have created, we will visualize them using three various layouts available in the `igraph` package. With those three layouts being **Fruchterman-Reingold (FR)**, **Kamada-Kawai (KK)**, and  **Multidimensional Scaling (MDS)**. In which these layouts use different approaches to position nodes in a two-dimensional space. Giving a different perspective on our subgraph network structure. With the FR layout being useful in revealing clusters and overall community structure of a network. The KK layout positions nodes so that their geometric distance on the plot reflecting their shorted path length. With the nodes close in the network to appear visually closer. It is also better at preserving the true relational distances between nodes than teh FR layout. Lastly, the MDS layout, will take the matrix of the shortest distances between all pair nodes and project it into a 2D space, to minimize distortion. With it emphasizing the global distance structure of the network.
 
 ### Subgraph 1
 ```{r, echo=FALSE}
@@ -442,15 +442,6 @@ print(transitivity(g, type = "local"))
 ```
 Local transitivity is the smaller-scale measure of transitivity, and tells whether the data's clustering occurs frequently between small groups. Values frequently take values close to 1, which again shows that web graphs are tightly connected on a local level. Sites covering related topics will likely reference each other. 
 
-#### Farthest Vertices
-
-```{r}
-print(farthest_vertices(g))
-```
-
-
-
-
 
 ## Community Detection
 
@@ -614,6 +605,21 @@ After reordering by community for each algorithm, we can see that the nodes form
 
 
 # Results
+To address the extreme sparsity of the full web graph, random walk sampling was used to generate four representative subgraphs. For each sample, a walk began from a randomly selected seed node and proceeded for $500$ steps through the network. The first $200$ unique nodes visited were then used to construct an induced subgraph, allowing us to capture locally connected regions of the web with meaningful hyperlink structure.
+
+Across all four sampled subgraphs, the networks display clustered structures connected by a small number of bridging nodes rather than forming a single densely connected component. This indicates that webpages tend to organize into tightly linked groups with relatively few connections between different clusters.
+
+Interestingly, Subgraph 1 shows a more fragmented structure consisting of several dense clusters connected by sparse bridge nodes. In contrast, the other subgraphs more clearly reveal two main communities connected by narrow linking paths. These patterns suggest that webpages are often organized into internally linked sections, with a small number of bridging pages forming hyperlink paths between different parts of the network.
+
+Connectivity also varies depending on where the random walk occurs in the graph. The sampled subgraphs have mean node degrees ranging from approximately $8.4$ to $16.1$, with Subgraph 4 representing the most densely connected region. Visualizations using the Fruchterman–Reingold, Kamada–Kawai, and MDS layouts consistently highlight community clustering, branching structures, and intermediary nodes linking separate regions of the graph.
+
+The overall low density aligns with known properties of web networks, where a small number of hub pages connect many otherwise independent webpages. However, the relatively low centralization observed suggests that the largest global hubs were unlikely to appear in these small sampled subgraphs.
+
+Community detection results further support this structure. The Walktrap algorithm generally detects more communities than Louvain or Fast-Greedy, suggesting the presence of smaller subcommunities within larger groups. At the same time, all algorithms produce high modularity values (around $0.7$ or higher), indicating strong and well-defined community structure across the sampled networks.
+
+Reordering the adjacency matrices by Louvain community membership reveals clear diagonal block patterns, most prominently in Subgraph 4. These blocks indicate that most edges occur within communities, while only a small number of nodes connect different groups. Some matrices also show L-shaped patterns, which represent hub-like webpages linking to multiple communities, similar to large informational or directory-style sites.
+
+Overall, the results show that random walk sampling successfully captures locally dense regions of the web graph and preserves key structural properties of the early internet, including modularity, hierarchical communities, and hub-mediated connectivity.
 
 
 
