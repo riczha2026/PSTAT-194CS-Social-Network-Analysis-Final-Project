@@ -1,38 +1,32 @@
 ---
-title: "SNA Final Project Slides"
+title: "A Random Walk Through the Web: Network Analysis of the Google Web Graph"
 author: "Richard Zhang, Toby Liu, Frank Wang, Max Peng"
 subtitle: PSTAT 194CS
 output:
-  ioslides_presentation: default
+  slidy_presentation: default
   beamer_presentation: default
+  ioslides_presentation: default
 ---
 
-
-
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 library(igraph)
 ```
 
-
-
-
 ## Google Dataset
-- Released by Google in $2002$ as part of the Google Programming Contest
-- Made publicly available through the Stanford Network Analysis Project (SNAP)
 
+-   Released by Google in $2002$ as part of the Google Programming Contest
+-   Made publicly available through the Stanford Network Analysis Project (SNAP)
 
 ## Dataset Description
+
 ```{r load-data, include=FALSE}
 library(igraph)
 edges <- read.table("web-Google.txt.gz", comment.char = "#")
 graph <- graph_from_data_frame(edges, directed = TRUE)
 ```
 
-
-
-```{r, echo=FALSE}
+```{r, echo=FALSE,fig.align='center'}
 avg.degree= mean(degree(graph))
 max.degree = max(degree(graph))
 density = edge_density(graph)
@@ -58,11 +52,8 @@ knitr::kable(Dataset.info,
              align = c("l","l"))
 ```
 
-
-
-
-
 ## `induced_subgraph()` Implemenation
+
 ```{r, echo=FALSE}
 set.seed(123)
 
@@ -75,9 +66,8 @@ sub.network[[3]]
 sub.network[[4]]
 ```
 
-
-
 ## Random Walk Sampling Code
+
 ```{r}
 set.seed(123)
 
@@ -96,9 +86,9 @@ for(i in 1:4){
 
 ```
 
-
 ## Checking Random Walk Sampling
-```{r,echo=FALSE}
+
+```{r,echo=FALSE,fig.align='center'}
 deg.full = degree(graph)
 
 bias.results = data.frame(
@@ -133,11 +123,9 @@ knitr::kable(bias.results,
              align = c("l", "r", "r", "r", "r", "r"))
 ```
 
-
-
-
 ## Subgraph 4 Visuals
-```{r,echo=FALSE}
+
+```{r,echo=FALSE,fig.align='center'}
 par(mfrow = c(1,3))
 
 plot(
@@ -168,14 +156,13 @@ plot(
 )
 ```
 
-
-
 ```{r,echo=FALSE}
 undirected_subgraphs <- lapply(subgraphs, function(g) as.undirected(g, mode = "collapse"))
 ```
+
 ## Metrics - Structure & Connectivity
 
-```{r connectivity}
+```{r connectivity, echo=FALSE}
 g <- subgraphs[[4]]
 density    <- round(edge_density(g), 4)
 strong_comp <- components(g, mode = "strong")$no
@@ -193,26 +180,26 @@ metrics <- data.frame(
 knitr::kable(metrics, align = c("l", "r"))
 ```
 
-- **Low density** confirms sparse web graph structure
-- **Reciprocity** reflects one-way nature of hyperlinks
-- **Transitivity** indicates degree of local clustering
-
+-   **Low density** confirms sparse web graph structure
+-   **Reciprocity** reflects one-way nature of hyperlinks
+-   **Transitivity** indicates degree of local clustering
 
 ## Adjacency Matrix
 
-- 200x200 matrix where each cell = 1 if a hyperlink exists between two pages
-- Original ordering: edges appear scattered, no visible structure
-- Goal: reorder nodes to reveal hidden patterns
+-   200x200 matrix where each cell = 1 if a hyperlink exists between two pages
+-   Original ordering: edges appear scattered, no visible structure
+-   Goal: reorder nodes to reveal hidden patterns
 
 ## Adjacency Matrix: Reordered by Community
 
-- Nodes reordered by Louvain community membership
-- Diagonal blocks emerge — pages in the same community densely hyperlink each other
-- Subgraph 4 (1,608 edges) shows the clearest block structure
-- Off-diagonal sparsity confirms pages from different communities rarely link directly
+-   Nodes reordered by Louvain community membership
+-   Diagonal blocks emerge — pages in the same community densely hyperlink each other
+-   Subgraph 4 (1,608 edges) shows the clearest block structure
+-   Off-diagonal sparsity confirms pages from different communities rarely link directly
 
 ## Adjacency Matrix Reordered
-```{r, fig.height=5, fig.width=5, fig.align='center'}
+
+```{r, fig.align='center', echo=FALSE}
 adj_mat <- as_adjacency_matrix(subgraphs[[4]], sparse = FALSE)
 kc_louv <- cluster_louvain(undirected_subgraphs[[4]])
 node_order <- order(membership(kc_louv))
