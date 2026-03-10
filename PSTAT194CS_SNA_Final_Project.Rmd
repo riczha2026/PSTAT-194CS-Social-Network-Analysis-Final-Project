@@ -629,11 +629,7 @@ for (i in 1:4) {
 }
 ```
 
-After reordering by community for each algorithm, we can see that the nodes form multiple boxes. This represents communities where nodes are highly interconnected. The adjacency matrix also happens to be mirrored across the y=x line, and that's because we used the undirected graph. We chose to use the undirected graph instead of the directed graph because that is the graph the algorithms used to detect the communities. If you also compare the adjencency matrix to the algorithm results, you see that the boxes correspond to how many communities each algorithm detected.
-
-There are two main shapes we see in the adjacency matrix. First is this sparse L shape. This represents a central node that connects to many other nodes. In the context of Google, this could be a site like Wikipedia that has links to many different communities. Next is a solid box. This represents a community where all the nodes are closely interconnected. This could be a set of subpages, where all pages link to each other. 
-
-
+After reordering by community for each algorithm, we can see that the nodes form multiple boxes. This represents communities where nodes are highly interconnected. The adjacency matrix also happens to be mirrored across the y=x line, and that's because we used the undirected graph. We chose to use the undirected graph instead of the directed graph because that is the graph the algorithms used to detect the communities.  We notice that there are two main shapes of dense boxes or relatively more sparse L shapes. Additionally, we see that Walktrap has more smaller boxes compared to Fast Greedy and Louvain.
 
 
 
