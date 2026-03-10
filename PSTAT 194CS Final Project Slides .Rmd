@@ -1,57 +1,411 @@
 ---
-title: "SNA Final Project Slides"
+title: "A Random Walk Through the Web: Network Analysis of the Google Web Graph"
 author: "Richard Zhang, Toby Liu, Frank Wang, Max Peng"
 subtitle: PSTAT 194CS
 output:
-  ioslides_presentation: default
-  beamer_presentation: default
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
 ---
 
+```{=html}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap');
+
+/* ── Base ─────────────────────────────────────────────── */
+slides > slide {
+  background: #1c1f2b;
+  color: #cbd3e8;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+}
+
+/* ── Title slide ──────────────────────────────────────── */
+slides > slide.title-slide {
+  background: linear-gradient(135deg, #1c1f2b 0%, #232840 50%, #1c1f2b 100%);
+}
+
+slides > slide.title-slide hgroup h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6em;
+  color: #eef1fa;
+  margin-bottom: 0.2em;
+}
+
+slides > slide.title-slide hgroup h2 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  color: #8fb3f0;
+  font-size: 1.3em;
+  letter-spacing: 0.04em;
+}
+
+/* ── Content slides ───────────────────────────────────── */
+slides > slide:not(.title-slide) {
+  background: #1c1f2b;
+  border-top: 3px solid #4a7fd4;
+  padding: 10px 50px 10px 50px;
+}
+
+slides > slide:not(.title-slide) > hgroup > h2 {
+  font-family: 'Playfair Display', serif;
+  color: #8fb3f0;
+  font-size: 1.6em;
+  border-bottom: 1px solid rgba(143, 179, 240, 0.3);
+  padding-bottom: 5px;
+  margin-bottom: 0.5em;
+  margin-top: 0.3em;
+}
+
+/* ── Tables ───────────────────────────────────────────── */
+table {
+  width: 70%;
+  border-collapse: collapse;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82em;
+  margin: 0.4em auto;
+}
+
+th {
+  background: #252a3d;
+  color: #8fb3f0;
+  font-weight: 500;
+  padding: 7px 14px;
+  text-align: left;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.78em;
+}
+
+td {
+  padding: 6px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: #6b7a9e;
+}
+
+tr:nth-child(even) td {
+  background: rgba(74, 127, 212, 0.07);
+}
+
+/* ── Bullet points ────────────────────────────────────── */
+ul, ol {
+  margin-top: 0.3em;
+}
+
+li {
+  margin-bottom: 0.4em;
+  line-height: 1.6;
+  color: #b8c4e0;
+}
+
+strong {
+  color: #8fb3f0;
+  font-weight: 600;
+}
+
+/* ── Inline code (backtick) ───────────────────────────── */
+p code, li code {
+  font-family: 'DM Mono', monospace;
+  background: #252a3d;
+  color: #7ecfa0;
+  border: 1px solid rgba(126,168,232,0.2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.87em;
+}
+
+/* ── Code blocks ──────────────────────────────────────── */
+pre {
+  font-family: 'DM Mono', monospace !important;
+  background: #12151f !important;
+  border: 1px solid rgba(143,179,240,0.18);
+  border-radius: 6px;
+  font-size: 0.79em;
+  padding: 10px 14px;
+  color: #b8d4a8 !important;
+}
+
+pre code {
+  background: transparent !important;
+  border: none;
+  padding: 0;
+  color: #b8d4a8 !important;
+}
+
+/* ── Slide number ─────────────────────────────────────── */
+slides > slide:not(.title-slide)::after {
+  color: #444d6a;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Logo banner ──────────────────────────────────────── */
+.logo-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3em;
+  margin: 1em auto 0.8em;
+  padding: 0.9em 2em;
+  background: #252a3d;
+  border: 1px solid rgba(143,179,240,0.2);
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.logo-banner img {
+  height: 42px;
+  object-fit: contain;
+}
+
+.logo-sep {
+  width: 1px;
+  height: 36px;
+  background: rgba(143,179,240,0.3);
+}
+</style>
+```
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 library(igraph)
 ```
+
+
+
+
+
+## Google Dataset
+
+:::: logo-banner
+<svg height="42" viewBox="0 0 272 92" xmlns="http://www.w3.org/2000/svg" aria-label="Google"> <path d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#EA4335"/> <path d="M163.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18c0-12.85 9.99-22.18 22.25-22.18s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44s-12.51 5.46-12.51 13.44c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#FBBC05"/> <path d="M209.75 26.34v39.82c0 16.38-9.66 23.07-21.08 23.07-10.75 0-17.22-7.19-19.66-13.07l8.48-3.53c1.51 3.61 5.21 7.87 11.17 7.87 7.31 0 11.84-4.51 11.84-13v-3.19h-.34c-2.18 2.69-6.38 5.04-11.68 5.04-11.09 0-21.25-9.66-21.25-22.09 0-12.52 10.16-22.26 21.25-22.26 5.29 0 9.49 2.35 11.68 4.96h.34v-3.61h9.25zm-8.56 20.92c0-7.81-5.21-13.52-11.84-13.52-6.72 0-12.35 5.71-12.35 13.52 0 7.73 5.63 13.36 12.35 13.36 6.63 0 11.84-5.63 11.84-13.36z" fill="#4285F4"/> <path d="M225 3v65h-9.5V3h9.5z" fill="#34A853"/> <path d="M262.02 54.48l7.56 5.04c-2.44 3.61-8.32 9.83-18.48 9.83-12.6 0-22.01-9.74-22.01-22.18 0-13.19 9.49-22.18 20.92-22.18 11.51 0 17.14 9.16 18.98 14.11l1.01 2.52-29.65 12.28c2.27 4.45 5.8 6.72 10.75 6.72 4.96 0 8.4-2.44 10.92-6.14zm-23.27-7.98l19.82-8.23c-1.09-2.77-4.37-4.7-8.23-4.7-4.95 0-11.84 4.37-11.59 12.93z" fill="#EA4335"/> <path d="M35.29 41.41V32h31.91c.31 1.64.47 3.58.47 5.68 0 7.06-1.93 15.79-8.15 22.01-6.05 6.3-13.78 9.66-24.02 9.66C16.32 69.35.36 53.89.36 34.67.36 15.45 16.32 0 35.5 0c10.32 0 17.22 4.03 22.6 9.16l-6.38 6.38c-3.86-3.61-9.09-6.38-16.22-6.38-13.27 0-23.65 10.67-23.65 24.11 0 13.44 10.38 24.11 23.65 24.11 8.6 0 13.52-3.44 16.64-6.56 2.54-2.54 4.21-6.17 4.87-11.12l-21.72.71z" fill="#4285F4"/> </svg>
+
+::: logo-sep
+:::
+
+<svg height="42" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" aria-label="Stanford SNAP"> <text y="28" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#B83A3A" letter-spacing="1">STANFORD</text> <text y="52" font-family="Georgia, serif" font-size="16" font-weight="400" fill="#8c8c8c" letter-spacing="3">SNAP</text> </svg>
+::::
+
+-   Released by Google in $2002$ as part of the Google Programming Contest
+-   Made publicly available through the Stanford Network Analysis Project (SNAP)
+-   2002: aftermath of the dotcom bubble effecting the internet space
+
+## Dataset Description
 
 ```{r load-data, include=FALSE}
 library(igraph)
 edges <- read.table("web-Google.txt.gz", comment.char = "#")
 graph <- graph_from_data_frame(edges, directed = TRUE)
+```
 
+```{r, echo=FALSE,fig.align='center'}
+avg.degree= mean(degree(graph))
+max.degree = max(degree(graph))
+density = edge_density(graph)
+
+Dataset.info= data.frame(
+  Property = c(
+    "Nodes", "Edges", "Directionality", "Weighted", "Self-loops", " Density",
+    "Mean Degree","Max Degree"
+  ),
+  Value = c(
+    vcount(graph),
+    ecount(graph),
+    ifelse(is_directed(graph), "Yes","No"),
+    ifelse(is_weighted(graph), "Yes","No"),
+    ifelse(any(which_loop(graph)), "Yes","No"),
+    round(density,7),
+    round(avg.degree,2),
+    max.degree
+  )
+)
+knitr::kable(Dataset.info,
+             caption = "Basic Network Elements of the web-Google Network",
+             align = c("l","l"))
+```
+
+## `induced_subgraph()` Implemenation
+
+```{r, echo=FALSE}
 set.seed(123)
+
+sub.network = lapply(1:4, function(x){
+  induced_subgraph(graph, sample(V(graph),200))
+})
+sub.network[[1]]
+sub.network[[2]]
+sub.network[[3]]
+sub.network[[4]]
+```
+
+## Random Walk Sampling Code
+
+```{r}
+set.seed(123)
+
 subgraphs <- list()
+
 for(i in 1:4){
   start_node <- sample(V(graph), 1)
-  walk <- random_walk(graph, start = start_node, steps = 500, mode = "all")
-  nodes_sampled <- unique(walk)[1:200]
+  walk <- random_walk(graph,
+                      start = start_node,
+                      steps = 500,
+                      mode = "all")
+  nodes_sampled <- unique(walk)
+  nodes_sampled <- nodes_sampled[1:200]
   subgraphs[[i]] <- induced_subgraph(graph, nodes_sampled)
 }
 
+```
+
+## Checking Random Walk Sampling
+
+```{r,echo=FALSE,fig.align='center'}
+deg.full = degree(graph)
+
+bias.results = data.frame(
+  Subgraph = character(),
+  Nodes = numeric(),
+  Edges = numeric(),
+  Mean_Degree = numeric(),
+  Median_Degree = numeric(),
+  KS_p_value = numeric(),
+  stringsAsFactors = FALSE
+)
+
+for (i in 1:4){
+  deg.sample = degree(subgraphs[[i]])
+  ks = ks.test(deg.sample, deg.full)
+  bias.results = rbind(
+    bias.results,
+    data.frame(
+      Subgraph = paste("Subgraph", i),
+      Nodes = vcount(subgraphs[[i]]),
+      Edges = ecount(subgraphs[[i]]),
+      Mean_Degree = mean(deg.sample),
+      Median_Degree = median(deg.sample),
+      KS_p_value = ks$p.value
+      )
+    )
+}
+knitr::kable(bias.results,
+             caption = "Sampling Bias Assessment of Random Walk Subgraphs",
+             col.names = c("Subgraph", "Nodes", "Edges", 
+                           "Mean Degree", "Median Degree", "KS P-Value"),
+             align = c("l", "r", "r", "r", "r", "r"))
+```
+
+## Subgraph 4 Visuals
+
+```{r,echo=FALSE,fig.align='center'}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_fr(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_kk(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_mds(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - MDS"
+)
+```
+
+```{r,echo=FALSE}
 undirected_subgraphs <- lapply(subgraphs, function(g) as.undirected(g, mode = "collapse"))
 ```
 
-# Google Dataset
+## Metrics - Structure & Connectivity
 
-## Dataset Characteristics:
-- Type: Directed web graph
-- Nodes (webpages): 875713
-- Edges (hyperlinks): 5105039
-- Source: Google Programming Contest (2002)
+```{r connectivity, echo=FALSE}
+g <- subgraphs[[4]]
+density    <- round(edge_density(g), 4)
+strong_comp <- components(g, mode = "strong")$no
+weak_comp   <- components(g, mode = "weak")$no
+avg_path   <- round(mean(distances(g)[is.finite(distances(g))]), 3)
+recip      <- round(reciprocity(g), 3)
+trans      <- round(transitivity(g), 3)
 
-## Step 6 - Adjacency Matrix
+metrics <- data.frame(
+  Metric = c("Density", "Strong Components", "Weak Components",
+             "Avg Path Length", "Reciprocity", "Transitivity"),
+  Value = c(density, strong_comp, weak_comp, avg_path, recip, trans)
+)
 
-- 200x200 matrix where each cell = 1 if a hyperlink exists between two pages
-- Original ordering: edges appear scattered, no visible structure
-- Goal: reorder nodes to reveal hidden patterns
+knitr::kable(metrics, align = c("l", "r"))
+```
+
+-   **Low density** confirms sparse web graph structure
+-   **Reciprocity** reflects one-way nature of hyperlinks
+-   **Transitivity** indicates degree of local clustering
+
+## Community Detection
+
+- Fast Greedy, Louvain, and Walktrap
+
+```{r, echo=FALSE}
+# list to store all results
+all_results <- list()
+g <- undirected_subgraphs[[4]]
+
+objs <- list(
+  fast_greedy = cluster_fast_greedy(g),
+  louvain     = cluster_louvain(g),
+  walktrap    = cluster_walktrap(g)
+)
+
+results <- data.frame(
+  Subgraph      = i,
+  Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+  N_communities = c(length(objs$fast_greedy), length(objs$louvain), length(objs$walktrap)),
+  Modularity_Q  = round(c(modularity(objs$fast_greedy), modularity(objs$louvain), modularity(objs$walktrap)), 4),
+  Max_Comm_Size = c(max(sizes(objs$fast_greedy)), max(sizes(objs$louvain)), max(sizes(objs$walktrap)))
+)
+
+knitr::kable(results, align = c("l", "r"))
+```
+
+## Community Detection
+
+- Walktrap detects more communities than other algorithms
+  - Fast greedy and Louvain typically struggle to see smaller communities
+  - Implies a hierarchical/subcommunity structure
+- Stable results with modularity of around 0.7 or higher
+- Largest community is less than a quarter of entire network size
+
+## Adjacency Matrix
+
+-   200x200 matrix where each cell = 1 if a hyperlink exists between two pages
+-   Original ordering: edges appear scattered, no visible structure
+-   Goal: reorder nodes to reveal hidden patterns
 
 ## Adjacency Matrix: Reordered by Community
 
-- Nodes reordered by Louvain community membership
-- Diagonal blocks emerge — pages in the same community densely hyperlink each other
-- Subgraph 4 (1,608 edges) shows the clearest block structure
-- Off-diagonal sparsity confirms pages from different communities rarely link directly
+-   Nodes reordered by Louvain community membership
+-   Diagonal blocks emerge — pages in the same community densely hyperlink each other
+-   Subgraph 4 (1,608 edges) shows the clearest block structure
+-   Off-diagonal sparsity confirms pages from different communities rarely link directly
 
-## Step 6 - Adjacency Matrix Reordered
-```{r, fig.height=5, fig.width=5, fig.align='center'}
+## Adjacency Matrix Reordered
+
+```{r, fig.align='center', echo=FALSE}
 adj_mat <- as_adjacency_matrix(subgraphs[[4]], sparse = FALSE)
 kc_louv <- cluster_louvain(undirected_subgraphs[[4]])
 node_order <- order(membership(kc_louv))
@@ -60,3 +414,20 @@ image(adj_mat_reordered,
       col = c("white", "steelblue"),
       axes = FALSE)
 ```
+
+
+
+
+## Conclusion 
+
+
+
+
+
+# Thank You
+
+
+
+
+
+

@@ -12,16 +12,45 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 ```
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  
+  {\LARGE \textbf{A Random Walk Through the Web}\par}
+  {\LARGE \textbf{Network Analysis of the Google Web Graph}\par}
+  
+  \vspace{1.5cm}
+  
+  {\large Richard Zhang, Max Peng, Toby Liu, Frank Wang\par}
+  
+  \vspace{0.5cm}
+  
+  {\normalsize PSTAT 194CS — Social Network Analysis\par}
+  {\normalsize University of California, Santa Barbara\par}
+  
+  \vspace{0.5cm}
+  
+  {\normalsize March 2026\par}
+  
+  \vfill
+  
+\end{titlepage}
+# Introduction
+The internet has become one of the most transformative and essential technologies in the early AI era. Serving as a universal learning tool, research platform, and the foundational infrastructure where AI continues to advance. With the rapid rise of AI, the internet has never been more critical, powering data pipelines, knowledge bases, and interconnected systems that modern machine learning systems depend on. Yet to truly understand the internet as it is today, it is valuable to examine it in its early development. Particularly in $2002$, during a turbulent times for the internet as it marked the aftermath of the dotcom bubble. Which led to many internet-based companies to rise and fall almost instantly. Fundamentally reshaping how the internet is today. 
 
-# Dataset
+Understanding how web pages were interconnected during this era not only reveals the structural properties of the early internet but also sheds light on how information flowed, how communities of related pages formed, and how search engines like Google first learned to navigate and rank content in the wake of one of the most dramatic technological disruptions in modern history.
 
-# Loading and Preparing Data
-```{r}
+## Dataset Description
+
+We will be conducting a social network analysis to the web-Google dataset. Which is a directed web graph released by Google in $2002$ as part of the Google Programming Contest. Made publicly available through the Stanford Network Analysis Project (SNAP). Where the dataset comprises of $875713$ webpages (vertices) and $5105039$ directed hyperlinks (edges) capturing a rich and large-scale portait of the internet as it existed in $2002$. In which, the vertices represent individual web pages that were collected from the internet in $2002$. With each node corresponding to a unique webpage labeled by a numeric id, and edges representing directed hyperlinks between webpages.
+
+
+```{r, echo=FALSE}
+#Loading and Preparing Dataset
+library(igraph)
+
 url = "https://snap.stanford.edu/data/web-Google.txt.gz"
 download.file(url, destfile = "web-Google.txt.gz", mode = "wb")
-```
-```{r}
-library(igraph)
 
 edges = read.table(
   "web-Google.txt.gz",
@@ -31,63 +60,68 @@ edges = read.table(
 graph = graph_from_data_frame(edges, directed=TRUE)
 ```
 
-# Understanding our Network
-```{r}
-cat("Number of Nodes:",vcount(graph),"\n")
-cat("Number of Edges:",ecount(graph))
+```{r, echo=FALSE}
+avg.degree= mean(degree(graph))
+max.degree = max(degree(graph))
+density = edge_density(graph)
+
+Dataset.info= data.frame(
+  Property = c(
+    "Nodes", "Edges", "Directionality", "Weighted", "Self-loops", " Density",
+    "Mean Degree","Max Degree"
+  ),
+  Value = c(
+    vcount(graph),
+    ecount(graph),
+    ifelse(is_directed(graph), "Yes","No"),
+    ifelse(is_weighted(graph), "Yes","No"),
+    ifelse(any(which_loop(graph)), "Yes","No"),
+    round(density,7),
+    round(avg.degree,2),
+    max.degree
+  )
+)
+knitr::kable(Dataset.info,
+             caption = "Basic Network Elements of the web-Google Network",
+             align = c("l","l"))
 ```
 
-```{r}
-is_directed(graph)
-```
-
-
-
-```{r}
-is_weighted(graph)
-```
-
-
-```{r}
-summary(graph)
-```
 
 
 
 
 
+## Objectives:
+The objectives of this analysis are to:
+* Generate representative subgraphs of the Google Web graph using random walk sampling to deal with sparsity limitations of induced subgraphs
+* Look into sampling bias by comparing degree distributions between the sampled subgraph and full network using the Kolmpgorov-Smirnov test
+* Visualize the network structure of our subgraphs with the Fruchterman-Reingold, Kamada-Kawai, and Multidimensional Scaling (MDS) layout to reveal structural and connectivity patterns
+* Compute and interpret network-level metrics (i.e. density, reciprocity, dyad census, transitivity, diameter, and mean distance) to capture the overall structure of the web graph 
+* Compute and interpret node-level metrics (i.e. in-degree, out-degree, betweenness centrality, closness centrality, and local transitivity) to identify influential web pages within the network
+* Detect and compare communities using Fast-Greedy, Louvain, Walktrap algorithms and evaluate their results using molecularity scores and community sizes
+* Examine the adjacency matrix of each subgraphs in their original and reordered form to confirm the presence of community strucutre and identify structural patterns.
 
-# Creating Subgraphs of 200-nodes
+# Methodology
 
+## Creating Subgraphs
 
-
-## Code Implemenation
-```{r, eval=FALSE}
+We will first generate four induced subgraphs by "purely" randomly sample $200$ nodes from the full network just using the `induced_subgraph()`. 
+```{r, echo=FALSE}
 set.seed(123)
 
 sub.network = lapply(1:4, function(x){
   induced_subgraph(graph, sample(V(graph),200))
 })
-```
-
-## Checking Subgraphs
-```{r, eval=FALSE}
 sub.network[[1]]
 sub.network[[2]]
 sub.network[[3]]
 sub.network[[4]]
 ```
+However, we can notice that from the results above, our subgraphs virtually do not have any edges. This could be due to the fact that the web-Google graph is extremely sparse (density $\approx$ `r round(edge_density(graph),7)`). This would make it difficult to get any meaningful analysis. 
 
+To resolve this issue, we will utilize the concept of random walk to sample. Where we would use igraph's built in `random_walk()` function. Beginning with a randomly chosen seed node, a random walk proceeds for $500$ steps by following the network’s edges and recording the nodes encountered. The first $200$ unique nodes visited during this process are then used to construct each induced subgraph. This method helps ensure that the resulting subgraphs are well connected and contain many edges, maintaining the local hyperlink structure of the web.
 
-
-
-
-
-
-
-
-
-## Random Walk New Implementation
+### Code Implementation
 ```{r}
 set.seed(123)
 
@@ -103,21 +137,29 @@ for(i in 1:4){
   nodes_sampled <- nodes_sampled[1:200]
   subgraphs[[i]] <- induced_subgraph(graph, nodes_sampled)
 }
+
+
 ```
 
-## Checking our Subgraphs
-```{r}
-subgraphs[[1]]
-subgraphs[[2]]
-subgraphs[[3]]
-subgraphs[[4]]
-```
+```{r,echo=FALSE}
 
+subgraph.info = data.frame(
+  Subgraph = paste("Subgraph", 1:4),
+  Nodes = sapply(subgraphs, vcount),
+  Edges = sapply(subgraphs, ecount)
+)
+
+knitr::kable(subgraph.info,
+             caption = "Summary of Random Walk Subgraphs",
+             align = c("l","r","r"))
+```
+Based on the results above, we can see that our random walk sampling helped with providing us with edges for our all four of our subgraphs.
 
 ## Checking on Sampling Bias
+
+Though our subgraphs have edges using random walk sampling, there are still sampling biases that we need to consider. 
 ```{r}
 deg.full = degree(graph)
-
 
 bias.results = data.frame(
   Subgraph = character(),
@@ -144,25 +186,41 @@ for (i in 1:4){
       )
     )
 }
-bias.results
+knitr::kable(bias.results,
+             caption = "Sampling Bias Assessment of Random Walk Subgraphs",
+             col.names = c("Subgraph", "Nodes", "Edges", 
+                           "Mean Degree", "Median Degree", "KS P-Value"),
+             align = c("l", "r", "r", "r", "r", "r"))
+```
+By comparing the degree distributions of each subgraph against the full network using summary statistics and the Kolmogorov-Smirnov (KS) test. Looking into our mean degree across subgraphs, we can notice that they range from $8.42$ to $16.08$. Where our median degree range from $5$ to $12$. Which suggests that some walks landed in denser regions of the network than others. Particularly subgraph $4$. As it is considerably denser than the other subgraphs. Indicating that the random walk from subgraph $4$ traversed a more tightly connected neighborhood of the web graph. This is important as we will be utilizing subgraph $4$ to observe network metrics later in our report. 
+
+When observing our KS test p-values, we can see that all four subgraphs result in extremely small p-values. Indicating that a statistically significant difference between the subgraphs and the full network degree distributions. This is not bad as this is expected given the massive size difference between $200$ nodes and the full roughly $876000$ nodes. With this scale the KS test is extremely sensitive. Flagging even the smallest differences as significant. Thus our random walk sampled subgraphs are still suitable for structural analysis. As it still preserves the local connectivity patterns of the web graph rather than attempting to replicate its global degree distribution. 
+
+
+## Tools and Packages Used
+```{r}
+packages <- data.frame(
+  Package = c("`igraph`", "`R.utils`"),
+  Purpose = c(
+    "Graph construction, manipulation, metrics and visualization",
+    "Decompressing the raw .gz dataset file"
+  )
+)
+
+knitr::kable(packages,
+             caption = "R Packages Used",
+             align = c("l", "l"))
 ```
 
 
 
+# Analysis
 
+## Visualization 
+Now to get a better understanding of our subgraphs that we have created, we will visualize them using three various layouts available in the `igraph` package. With those three layouts being **Fruchterman-Reingold (FR)**, **Kamada-Kawai (KK)**, and  **Multidimensional Scaling (MDS)**. In which these layouts use different approaches to position nodes in a two-dimensional space. Giving a different perspective on our subgraph network structure. 
 
-
-
-
-
-
-
-
-
-# Visualization 
-
-## Subgraph 1
-```{r}
+### Subgraph 1
+```{r, echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -192,9 +250,12 @@ plot(
   main = "Subgraph 1 - MDS"
 )
 ```
+Across all three layouts, we can notice that subgraph $1$ reveals a fragmented structure consisting of several distinct dense clusters connected by sparse bridge nodes rather than a single cohesive core. With the FR layout, we can see that it displays a central high populated region where many node connect, several branching chains extending outward from the core, and small satellite clusters at the end of the branches. In the KK layouts, we can see that the core cluster is very tight and circular with the branches appearing more spread and structured compared to the FR layout. Lastly in MDS layout, we can notice that the branches stretch our more linearly, the central cluster is less visually dense, and the network forms a Y like structure with the lines having relatively equal length. With these three layouts, it reveals that subgraph $1$ contains a central core with several peripheral branches. Which tells us that the subgraph $1$'s network has localized clustering and hierarchical link structures. In the context of webpages and hyperlinks, this structure suggests that the web graph contains clusters of closely related pages with dense internal linking, while a limited number of bridging pages connect otherwise separate regions of the network.
 
-## Subgraph 2
-```{r}
+
+
+### Subgraph 2
+```{r,echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -224,11 +285,11 @@ plot(
   main = "Subgraph 2 - MDS"
 )
 ```
+Based on the visuals, we can see that it is relatively different different compared to subgraph $1$. In the FR Layout, we can notice that it has the same U shape as the FR layout for subgraph $1$. However, we can see that there are visibly two clusters. With these clusters being connected by a long chain of nodes. Suggesting a bridge like path linking between two communities. Which also indicate that the connectivity between the two groups is weak. With the KK layout, we also notice two clusters much clearer. With it also showing a connecting path between the two communities, and peripheral node branching off the main chain. Which indicate the same thing as the FR layout. Showing that we have two groups that are structurally separate from each other but are connected. In the MDS layout, we can see that like the visuals from subgraph $1$, it has a Y shape. However, subgraph $2$ is upside down. We can also notice that most of our nodes are on the bottom two lines of the upside down Y. When viewed as webpages and hyperlinks, this pattern indicates that two groups of pages are mostly internally connected, with only a few bridging pages linking the two sections of the network.
 
 
-
-## Subgraph 3
-```{r}
+### Subgraph 3
+```{r,echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -258,12 +319,12 @@ plot(
   main = "Subgraph 3 - MDS"
 )
 ```
+For the visuals for subgraph $3$, we observe how different they look compared to the other two subgraphs above. For the FR layout, like subgraph $2$, we can see that we have two clusters that are weakly connected to each other. However, we notice that the link between the two are more direct and the clustering is a little bit weaker compared to subgraph $2$. Also it does not display a U shape. This also shows that there are only a few nodes that link between the two groups. In the KK layout, we can also see two communities that are connected to each other. However, we can see that the clustering of the two clusters are relatively weaker (nodes are more spread out). Lastly, for the MDS layout, we can see that it is also a Y shape like the other subgraphs we have seen above. However, we can notice some nodes that are not tightly within the Y shape. Which reveals that the network contains several long paths branching from a central region. Interpreting nodes as webpages and edges as hyperlinks, this structure suggests that the network contains two loosely connected groups of webpages, where most links occur within each group and only a few intermediary pages provide connections between them. 
 
 
 
-
-## Subgraph 4
-```{r}
+### Subgraph 4
+```{r,echo=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -293,98 +354,79 @@ plot(
   main = "Subgraph 4 - MDS"
 )
 ```
+Lastly for subgraph $4$, we can also clearly notice that we have two dense clusters connected bu a narrow bridging path. Where in the FR layout, can can see that we have two clusters. However, in those clusters there are subclusters in them. As we can see small clusters spread around in both the overall large clusters. As for the K layout we can also see that we have two groups. However, it shows the same results are the FR layout. In that there are several small subclusters that appear inside the larger group. Which also highlight how our community is structured. Showing that nodes within the cluster are more strongly connected to each other than to nodes in the other group. Now what is extremely interesting is the MDS layout. Where for the other subgraphs they for the most part formed a tight Y shape. However, for subgraph $4$ we can notice how it does form a Y shape. But, the nodes are extremely spread out. This suggests that our network is organized more around paths and branching connections rather than tightly packed clusters. In relation to webpages and hyperlinks, this structure suggests that webpages are organized into clustered sections with internal linking, while a small number of bridging pages create branching hyperlink paths that connect different parts of the network.
 
+## Network Metrics
+Now, we will focus our analysis on the network metrics of subgraph $4$ (as mentioned previously) in order to quantitatively examine the structural properties suggested from the visualizations we have examined. While the layouts provide useful qualitative insights into clustering, bridging node, and branching paths, we can gain further insights by measuring those characteristics. Such as density, reciprocity, transitivity, path lengths, clustering behavior, and importance of individual nodes within subgraph $4$. 
 
-
-
-
-
-
-
-
-
-
-
-# 4) Network Metrics
-## DELETEMEMetrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
-
-<<<<<<< HEAD
-# Metrics Evaluated for ALL 4 SUBGRAPHS (probably don't do this)
-
-```{r, eval = TRUE, results='hide'}
-=======
 ```{r, echo = FALSE, eval = TRUE}
->>>>>>> 81e4d5ed7c19759bef9ee7fbbe7a3a9df04187ce
-for (i in 1:4) {
-  cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
-  
-  cat("Density:", "\n") 
-  print(edge_density(subgraphs[[i]]))
+cat("Metrics for Subgraph", i, ":\n", "NETWORK LEVEL METRICS", "\n")
 
-  # Reciprocity
-  cat("Reciprocity:", "\n")
-  print(reciprocity(subgraphs[[i]]))
+cat("Density:", "\n") 
+print(edge_density(subgraphs[[4]]))
 
-  # Dyad Census 
-  cat("Pairwise Relationships:", "\n")
-  print(dyad_census(subgraphs[[i]]))
+# Reciprocity
+cat("Reciprocity:", "\n")
+print(reciprocity(subgraphs[[4]]))
 
-  # Transitivity 
-  cat("Transitivity:", "\n")
-  print(transitivity(subgraphs[[i]]))
-  
-  # Average distance between nodes
-  cat("Mean Distance Between Nodes:", "\n")
-  print(mean_distance(subgraphs[[i]]))
+# Dyad Census 
+cat("Pairwise Relationships:", "\n")
+print(dyad_census(subgraphs[[4]]))
 
-  # Diameter
-  cat("Diameter and the Associated Nodes:", "\n")
-  print(diameter(subgraphs[[i]], weights = NA))
-  print(farthest_vertices(subgraphs[[i]]))
-  
-  # NODE LEVEL METRICS
-  def_marg <- c(5.1, 4.1, 4.1, 2.1)
-  cat("NODE LEVEL METRICS", "\n", "Degree:", "\n")
-  print(degree(subgraphs[[i]], mode = "in"))
-  par(mar= def_marg)
-  hist(degree(subgraphs[[1]], mode = "in"),
-       xlim = c(0, 40),
-     breaks=1:vcount(subgraphs[[1]])-1, 
-     main="Indegree Histogram")
-  par(mar= def_marg)
-  print(degree(subgraphs[[i]], mode = "out"))
-  hist(degree(subgraphs[[1]], mode = "out"),
-       xlim = c(0, 20),
-     breaks=1:vcount(subgraphs[[1]])-1, 
-     main="Outdegree Histogram")
-  
-  # Centrality
-  cat("Betweenness Centrality:", "\n")
-  print(betweenness(subgraphs[[i]]))
-  cat(mean(is.nan(betweenness(subgraphs[[i]]))), "of the values are NaN", "\n")
-  
-  cat("Closeness Centrality:", "\n")
-  clr <- centr_clo(subgraphs[[i]], mode="all", normalized=T)
-  print(centr_clo(subgraphs[[i]], mode="all", normalized=T))
-  cat(mean(is.nan(closeness(subgraphs[[i]]))), "of the values are NaN", "\n")
-  sort(clr$res, decreasing = T, index.return = T)
-  
-  cat("Local Transitivity:", "\n")
-  print(transitivity(subgraphs[[i]], type="local"))
-}
+# Transitivity 
+cat("Transitivity:", "\n")
+print(transitivity(subgraphs[[4]]))
+
+# Average distance between nodes
+cat("Mean Distance Between Nodes:", "\n")
+print(mean_distance(subgraphs[[4]]))
+
+# Diameter
+cat("Diameter and the Associated Nodes:", "\n")
+print(diameter(subgraphs[[4]], weights = NA))
+print(farthest_vertices(subgraphs[[4]]))
+
+# NODE LEVEL METRICS
+def_marg <- c(5.1, 4.1, 4.1, 2.1)
+cat("NODE LEVEL METRICS", "\n", "Degree:", "\n")
+print(degree(subgraphs[[4]], mode = "in"))
+par(mar= def_marg)
+hist(degree(subgraphs[[4]], mode = "in"),
+     xlim = c(0, 40),
+   breaks=1:vcount(subgraphs[[4]])-1, 
+   main="Indegree Histogram")
+par(mar= def_marg)
+print(degree(subgraphs[[4]], mode = "out"))
+hist(degree(subgraphs[[4]], mode = "out"),
+     xlim = c(0, 20),
+   breaks=1:vcount(subgraphs[[4]])-1, 
+   main="Outdegree Histogram")
+
+# Centrality
+cat("Betweenness Centrality:", "\n")
+print(betweenness(subgraphs[[4]]))
+cat(mean(is.nan(betweenness(subgraphs[[4]]))), "of the values are NaN", "\n")
+
+cat("Closeness Centrality:", "\n")
+clr <- centr_clo(subgraphs[[4]], mode="all", normalized=T)
+print(centr_clo(subgraphs[[4]], mode="all", normalized=T))
+cat(mean(is.nan(closeness(subgraphs[[4]]))), "of the values are NaN", "\n")
+sort(clr$res, decreasing = T, index.return = T)
+
+cat("Local Transitivity:", "\n")
+print(transitivity(subgraphs[[4]], type="local"))
 ```
 
-## Interpretations
+### Interpretations
 
-Density is the proportion of edges in a network compared to how many possible edges could exist. A density of `r edge_density(subgraphs[[1]])` indicates a sparse network with a low proportion of connected nodes. This is reasonable for a Google web graph, as only somewhat-related websites would have links connecting one to the other. 
+Density is the proportion of edges in a network compared to how many possible edges could exist. A density of `r edge_density(subgraphs[[4]])` indicates a sparse network with a low proportion of connected nodes. This is reasonable for a Google web graph, as only somewhat-related websites would have links connecting one to the other. 
 
-Reciprocity is the proportion of edges from node A to B that have a corresponding edge traveling from B to A. This quantity tends to be higher in friendship networks where connections are mutual, and lower in follower networks due to their one-sided nature. Our value of `r reciprocity(subgraphs[[1]])` suggests a moderately low percentage of websites with mutual hyperlinks. 
+Reciprocity is the proportion of edges from node A to B that have a corresponding edge traveling from B to A. This quantity tends to be higher in friendship networks where connections are mutual, and lower in follower networks due to their one-sided nature. Our value of `r reciprocity(subgraphs[[4]])` suggests a moderately low percentage of websites with mutual hyperlinks. 
+The dyad census takes all pairs of nodes and calculates the number of mutual connections, one-sided (asymmetric) connections, and null connections among all node pairs. We see that there are `r dyad_census(subgraphs[[4]])$mut` mutually connected nodes and almost 20000 unconnected nodes. This echoes the low density found from earlier, and is perfectly reasonable since hyperlinks should be relevant to the website it was found on. 
 
-The dyad census takes all pairs of nodes and calculates the number of mutual connections, one-sided (asymmetric) connections, and null connections among all node pairs. We see that there are `r dyad_census(subgraphs[[1]])$mut` mutually connected nodes and almost 20000 unconnected nodes. This echoes the low density found from earlier, and is perfectly reasonable since hyperlinks should be relevant to the website it was found on. 
+Diameter measures the length of all shortest paths between nodes in the network and returns the maximum value, while average distance returns the mean. Higher values indicate more indirect connections. A mean distance of `r mean_distance(subgraphs[[4]])` is quite low, and suggests that connections seldom occur through a large number of intermediary websites.
 
-Diameter measures the length of all shortest paths between nodes in the network and returns the maximum value, while average distance returns the mean. Higher values indicate more indirect connections. A mean distance of `r mean_distance(subgraphs[[1]])` is quite low, and suggests that connections seldom occur through a large number of intermediary websites.
-
-Global transitivity is the likelihood that two different neighbors of a node also share an edge. High transitivity indicates a network with tight-knit groups and more clustering. This is the case for our network, as a transitivity of `r transitivity(subgraphs[[1]])` shows the close-knit nature of websites with hyperlinks conencting each other, even on a global scale. 
+Global transitivity is the likelihood that two different neighbors of a node also share an edge. High transitivity indicates a network with tight-knit groups and more clustering. This is the case for our network, as a transitivity of `r transitivity(subgraphs[[4]])` shows the close-knit nature of websites with hyperlinks conencting each other, even on a global scale. 
 
 Degree is a node-level measure of how many edges connected to it. Since we are working with a directed graph, the number of in-edges and out-edges are distinct. There is a clear right skew in both histograms, which is expected for a web graph since most websites will have a handful of connections but few will have a great deal.
 
@@ -395,10 +437,12 @@ Closeness is a centrality measure that measures the distance from a node to all 
 Local transitivity is the smaller-scale measure of transitivity, and tells whether the data's clustering occurs frequently between small groups. Values frequently take values close to 1, which again shows that web graphs are tightly connected on a local level. Sites covering related topics will likely reference each other. 
 
 
+
+
   
   
 
-# 5) Community Detection
+## Community Detection
 
 Because the community detection algorithms want an undirected graph and our current graph is directed, we need to convert it into an undirected graph first. Then, we can run all of the community detection algorithms on each subgraph and store it all inside one dataframe. We will also store the results inside a comunity objects data structure so that we can use the results later.
 
@@ -441,7 +485,7 @@ final_comparison
 Looking at the results, we see that Walktrap generally detects more communities than the other 2 algorithms. All of the algorithms have high modularity greater than 0.7, suggesting that they found clear communities.
 
 
-# 6) Adjacency Matrix
+## Adjacency Matrix
 ```{r}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
@@ -484,7 +528,7 @@ final_comparison
 
 
 
-# 6) Adjacency Matrix
+## Adjacency Matrix
 ```{r}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
@@ -516,7 +560,7 @@ for(i in 1:4){
 The adjacency matrix of each 200-node subgraph was examined to identify structural patterns in the Google web graph. Each entry in the matrix represents the presence of a directed hyperlink between two pages. In the original node ordering, edges appear scattered with no discernible pattern, reflecting the arbitrary order in which nodes were sampled.
 To reveal underlying structure, nodes were reordered by Louvain community membership. After reordering, clear diagonal block patterns emerged, particularly in Subgraph 4 which contained 1,608 edges. Each block along the diagonal represents a group of web pages that densely hyperlink to one another, likely corresponding to topically related pages. The sparsity off the diagonal indicates that pages from different communities rarely link directly to each other. This visual confirmation aligns with the community detection results, supporting the presence of meaningful cluster structure within the Google web graph.
 
-# 7) Reordering Nodes for Community Detection
+## Reordering Nodes for Community Detection
 
 As we see above, all of the nodes are in one connected component. As such, this step is essentially the same as above. We will reorder the adjacency matrices for all of the remaining subgraphs as well.
 
@@ -557,11 +601,14 @@ There are two main shapes we see in the adjacency matrix. First is this sparse L
 
 
 
+# Results
 
 
 
 
 
+
+# Conclusion
 
 
 
@@ -583,7 +630,12 @@ There are two main shapes we see in the adjacency matrix. First is this sparse L
 
 \newpage
 
-## Appendix
+# References
+
+
+\newpage
+
+# Appendix
 
 ```{r appendix-code, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
