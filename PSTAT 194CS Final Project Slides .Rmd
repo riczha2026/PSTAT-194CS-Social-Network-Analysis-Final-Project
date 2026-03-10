@@ -356,6 +356,40 @@ knitr::kable(metrics, align = c("l", "r"))
 -   **Reciprocity** reflects one-way nature of hyperlinks
 -   **Transitivity** indicates degree of local clustering
 
+## Community Detection
+
+- Fast Greedy, Louvain, and Walktrap
+
+```{r, echo=FALSE}
+# list to store all results
+all_results <- list()
+g <- undirected_subgraphs[[4]]
+
+objs <- list(
+  fast_greedy = cluster_fast_greedy(g),
+  louvain     = cluster_louvain(g),
+  walktrap    = cluster_walktrap(g)
+)
+
+results <- data.frame(
+  Subgraph      = i,
+  Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+  N_communities = c(length(objs$fast_greedy), length(objs$louvain), length(objs$walktrap)),
+  Modularity_Q  = round(c(modularity(objs$fast_greedy), modularity(objs$louvain), modularity(objs$walktrap)), 4),
+  Max_Comm_Size = c(max(sizes(objs$fast_greedy)), max(sizes(objs$louvain)), max(sizes(objs$walktrap)))
+)
+
+knitr::kable(results, align = c("l", "r"))
+```
+
+## Community Detection
+
+- Walktrap detects more communities than other algorithms
+  - Fast greedy and Louvain typically struggle to see smaller communities
+  - Implies a hierarchical/subcommunity structure
+- Stable results with modularity of around 0.7 or higher
+- Largest community is less than a quarter of entire network size
+
 ## Adjacency Matrix
 
 -   200x200 matrix where each cell = 1 if a hyperlink exists between two pages
