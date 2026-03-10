@@ -411,8 +411,12 @@ kc_louv <- cluster_louvain(undirected_subgraphs[[4]])
 node_order <- order(membership(kc_louv))
 adj_mat_reordered <- adj_mat[node_order, node_order]
 image(adj_mat_reordered,
+      main = "Subgraph 4 - Reordered by Community",
+      sub = "Blue = hyperlink exists, White = no hyperlink",
       col = c("white", "steelblue"),
-      axes = FALSE)
+      axes = FALSE,
+      xlab = "Node (reordered)",
+      ylab = "Node (reordered)")
 ```
 
 

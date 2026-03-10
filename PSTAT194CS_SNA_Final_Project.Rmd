@@ -535,8 +535,11 @@ for(i in 1:4){
   
   image(adj_mat,
         main = paste("Subgraph", i, "- Original Node Order"),
+        sub = "Blue = hyperlink exists, White = no hyperlink",
         col = c("white", "steelblue"),
-        axes = FALSE)
+        axes = FALSE,
+        xlab = "Node",
+        ylab = "Node")
 }
 ```
 
@@ -552,8 +555,11 @@ for(i in 1:4){
   
   image(adj_mat_reordered,
         main = paste("Subgraph", i, "- Reordered by Community"),
+        sub = "Blue = hyperlink exists, White = no hyperlink",
         col = c("white", "steelblue"),
-        axes = FALSE)
+        axes = FALSE,
+        xlab = "Node (reordered)",
+        ylab = "Node (reordered)")
 }
 ```
 
