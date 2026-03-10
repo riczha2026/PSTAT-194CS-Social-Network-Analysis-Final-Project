@@ -3,10 +3,10 @@ title: 'A Random Walk Through the Web: Network Analysis of the Google Web Graph'
 author: "Richard Zhang, Toby Liu, Frank Wang, Max Peng"
 subtitle: PSTAT 194CS
 output:
-  beamer_presentation: default
   ioslides_presentation:
     widescreen: true
     smaller: true
+  beamer_presentation: default
 ---
 
 ```{=html}
