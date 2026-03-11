@@ -391,6 +391,78 @@ knitr::kable(results, align = c("l", "r"))
 - Stable results with modularity of around 0.7 or higher
 - Largest community is less than a quarter of entire network size
 
+
+```{r,echo=FALSE}
+# convert all into undirected graphs
+undirected_subgraphs <- vector("list", 4)
+for (i in 1:4){
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]], mode="collapse")
+}
+# list to store all results
+all_results <- list()
+community_objects <- list()
+
+for (i in 1:4) {
+  g <- undirected_subgraphs[[i]]
+  
+  community_objects[[i]] <- list(
+    fast_greedy = cluster_fast_greedy(g),
+    louvain     = cluster_louvain(g),
+    walktrap    = cluster_walktrap(g)
+  )
+  
+  # Grab the objects we just saved to calculate stats
+  objs <- community_objects[[i]]
+  
+  all_results[[i]] <- data.frame(
+    Subgraph      = i,
+    Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+    N_communities = c(length(objs$fast_greedy), length(objs$louvain), length(objs$walktrap)),
+    Modularity_Q  = round(c(modularity(objs$fast_greedy), modularity(objs$louvain), modularity(objs$walktrap)), 4),
+    Max_Comm_Size = c(max(sizes(objs$fast_greedy)), max(sizes(objs$louvain)), max(sizes(objs$walktrap)))
+  )
+}
+
+# combine list into one table
+final_comparison <- do.call(rbind, all_results)
+```
+## Subgraph 4 Community Detection Visualization
+```{r,echo=FALSE}
+g4 <- undirected_subgraphs[[4]]
+
+# compute layout once so all plots use the same node positions
+L <- layout_with_kk(g4)
+
+par(mfrow = c(1,3))
+
+plot(community_objects[[4]]$fast_greedy, g4,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Fast Greedy")
+
+plot(community_objects[[4]]$louvain, g4,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Louvain")
+
+plot(community_objects[[4]]$walktrap, g4,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Walktrap")
+
+```
+
+
+
 ## Adjacency Matrix
 
 -   200x200 matrix where each cell = 1 if a hyperlink exists between two pages

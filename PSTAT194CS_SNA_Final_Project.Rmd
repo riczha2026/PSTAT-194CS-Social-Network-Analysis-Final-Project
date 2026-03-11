@@ -1,5 +1,4 @@
 ---
-title: "PSTAT194CS_SNA_Final_Project"
 output:
   pdf_document: default
   word_document: default
@@ -13,28 +12,35 @@ knitr::opts_chunk$set(
 )
 ```
 \begin{titlepage}
-  \centering
-  \vspace*{2cm}
-  
-  {\LARGE \textbf{A Random Walk Through the Web}\par}
-  {\LARGE \textbf{Network Analysis of the Google Web Graph}\par}
-  
-  \vspace{1.5cm}
-  
-  {\large Richard Zhang, Max Peng, Toby Liu, Frank Wang\par}
-  
-  \vspace{0.5cm}
-  
-  {\normalsize PSTAT 194CS — Social Network Analysis\par}
-  {\normalsize University of California, Santa Barbara\par}
-  
-  \vspace{0.5cm}
-  
-  {\normalsize March 2026\par}
-  
-  \vfill
-  
+
+\vspace*{\fill}
+
+\begin{center}
+
+{\Huge \textbf{A Random Walk Through the Web}\par}
+\vspace{0.4cm}
+{\Huge \textbf{Network Analysis of the Google Web Graph}\par}
+
+\vspace{2cm}
+
+{\LARGE Richard Zhang, Max Peng, Toby Liu, Frank Wang\par}
+
+\vspace{0.8cm}
+
+{\Large PSTAT 194CS — Social Network Analysis\par}
+{\Large University of California, Santa Barbara\par}
+
+\vspace{0.8cm}
+
+{\Large March 2026\par}
+
+\end{center}
+
+\vspace*{\fill}
+
 \end{titlepage}
+
+
 # Introduction
 The internet has become one of the most transformative and essential technologies in the early AI era. Serving as a universal learning tool, research platform, and the foundational infrastructure where AI continues to advance. With the rapid rise of AI, the internet has never been more critical, powering data pipelines, knowledge bases, and interconnected systems that modern machine learning systems depend on. Yet to truly understand the internet as it is today, it is valuable to examine it in its early development. Particularly in $2002$, during a turbulent times for the internet as it marked the aftermath of the dotcom bubble. Which led to many internet-based companies to rise and fall almost instantly. Fundamentally reshaping how the internet is today. 
 
@@ -198,12 +204,14 @@ When observing our KS test p-values, we can see that all four subgraphs result i
 
 
 ## Tools and Packages Used
+
 ```{r}
 packages <- data.frame(
-  Package = c("`igraph`", "`R.utils`"),
+  Package = c("`igraph`", "`R.utils`", "`knitr`"),
   Purpose = c(
     "Graph construction, manipulation, metrics and visualization",
-    "Decompressing the raw .gz dataset file"
+    "Decompressing the raw .gz dataset file",
+    "Generating formatted tables and controlling RMarkdown output"
   )
 )
 
@@ -214,13 +222,14 @@ knitr::kable(packages,
 
 
 
+
 # Analysis
 
 ## Visualization 
 Now to get a better understanding of our subgraphs that we have created, we will visualize them using three various layouts available in the `igraph` package. With those three layouts being **Fruchterman-Reingold (FR)**, **Kamada-Kawai (KK)**, and  **Multidimensional Scaling (MDS)**. In which these layouts use different approaches to position nodes in a two-dimensional space. Giving a different perspective on our subgraph network structure. With the FR layout being useful in revealing clusters and overall community structure of a network. The KK layout positions nodes so that their geometric distance on the plot reflecting their shorted path length. With the nodes close in the network to appear visually closer. It is also better at preserving the true relational distances between nodes than teh FR layout. Lastly, the MDS layout, will take the matrix of the shortest distances between all pair nodes and project it into a 2D space, to minimize distortion. With it emphasizing the global distance structure of the network.
 
 ### Subgraph 1
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -255,7 +264,7 @@ Across all three layouts, we can notice that subgraph $1$ reveals a fragmented s
 
 
 ### Subgraph 2
-```{r,echo=FALSE}
+```{r,echo=FALSE, eval=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -289,7 +298,7 @@ Based on the visuals, we can see that it is relatively different different compa
 
 
 ### Subgraph 3
-```{r,echo=FALSE}
+```{r,echo=FALSE, eval=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -324,7 +333,7 @@ For the visuals for subgraph $3$, we observe how different they look compared to
 
 
 ### Subgraph 4
-```{r,echo=FALSE}
+```{r,echo=FALSE, eval=FALSE}
 par(mfrow = c(1,3))
 
 plot(
@@ -402,16 +411,13 @@ Diameter measures the length of all shortest paths between nodes in the network 
 
 Global transitivity is the likelihood that two different neighbors of a node also share an edge. High transitivity indicates a network with tight-knit groups and more clustering. This is the case for our network, as a transitivity of `r transitivity(subgraphs[[4]])` shows the close-knit nature of websites with hyperlinks conencting each other, even on a global scale. 
 
-```{r indegree-histogram}
-par(mar = c(5.1, 4.1, 4.1, 2.1))
+```{r degree-histogram, fig.height=3.5}
+par(mfrow = c(1,2),mar = c(5.1, 4.1, 4.1, 2.1))
 hist(degree(g, mode = "in"),
      xlim = c(0, 40),
      breaks = 1:vcount(g)-1,
      main = "In-Degree Histogram",
      xlab = "In-Degree")
-```
-```{r outdegree-histogram}
-par(mar = c(5.1, 4.1, 4.1, 2.1))
 hist(degree(g, mode = "out"),
      xlim = c(0, 40),
      breaks = 1:vcount(g)-1,
@@ -422,14 +428,14 @@ hist(degree(g, mode = "out"),
 Degree is a node-level measure of how many edges connected to it. Since we are working with a directed graph, the number of in-edges and out-edges are distinct. There is a clear right skew in both histograms, which is expected for a web graph since most websites will have a handful of connections but few will have a great deal.
 
 #### Betweenness (per node)
-```{r}
+```{r, eval=FALSE}
 print(betweenness(g))
 ```
 Betweenness is a centrality measure that finds the frequency of a node existing within the shortest path between two other nodes. Nodes with high betweenness centrality are often critical points in the network that control information flow. In our network some nodes have a betweenness measure of over 1400 while others have a betweenness of 0. Pages like Yahoo or trusted encyclopedia pages likely had these high centralities, since they would have been referred to frequently by other sites even if they were not directly related.  
 
 #### Closeness Centrality (per node)
 
-```{r}
+```{r,eval=FALSE}
 clr <- centr_clo(g, mode = "all", normalized = TRUE)
 print(sort(clr$res, decreasing = TRUE, index.return = TRUE))
 ```
@@ -437,7 +443,7 @@ Closeness is a centrality measure that measures the distance from a node to all 
 
 #### Local Transitivity (per node)
 
-```{r}
+```{r,eval=FALSE}
 print(transitivity(g, type = "local"))
 ```
 Local transitivity is the smaller-scale measure of transitivity, and tells whether the data's clustering occurs frequently between small groups. Values frequently take values close to 1, which again shows that web graphs are tightly connected on a local level. Sites covering related topics will likely reference each other. 
@@ -480,14 +486,59 @@ for (i in 1:4) {
 
 # combine list into one table
 final_comparison <- do.call(rbind, all_results)
-final_comparison
+
+
+
+knitr::kable(final_comparison,
+      caption = "Community Detection Comparison Across Subgraphs",
+      col.names = c("Subgraph", "Algorithm", "Number of Communities", 
+                    "Modularity (Q)", "Max Community Size"))
 ```
 
-Looking at the results, we see that Walktrap generally detects more communities than the other 2 algorithms. All of the algorithms have high modularity greater than 0.7, suggesting that they found clear communities.
+Looking at the results, we see that Walktrap generally detects more communities than the other 2 algorithms. All of the algorithms have high modularity greater than 0.7, suggesting that they found clear communities. It seems that subgraph $3$ gets the highest modularity values compared to the other subgraphs across all three algorithms. With this we will dive deeper into observing subgraph 3 by visualize our network again.
+
+```{r,echo=FALSE, eval=FALSE}
+g3 <- undirected_subgraphs[[3]]
+
+# compute layout once so all plots use the same node positions
+L <- layout_with_kk(g3)
+
+par(mfrow = c(1,3))
+
+plot(community_objects[[3]]$fast_greedy, g3,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Fast Greedy")
+
+plot(community_objects[[3]]$louvain, g3,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Louvain")
+
+plot(community_objects[[3]]$walktrap, g3,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Walktrap")
+
+```
+
+When viewing our visualization of subgraph 3 with a KK layout, we can see that our previous observations matched what we are seeing here. In that we noticed that we have two significant/larger clusters. And that in those larger clusters, we have many subclusters within them. 
+
+
+
 
 
 ## Adjacency Matrix
-```{r}
+```{r fig.width=4, fig.height=4, fig.align='center',eval=FALSE}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
   
@@ -521,16 +572,24 @@ for (i in 1:4) {
     Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
   )
 }
-
+```
+```{r, echo=FALSE}
 # combine list into one table
 final_comparison <- do.call(rbind, all_results)
-final_comparison
+
+knitr::kable(final_comparison,
+      caption = "Comparison of Community Detection Algorithms Across Subgraphs",
+      col.names = c("Subgraph",
+                    "Algorithm",
+                    "Number of Communities",
+                    "Modularity (Q)",
+                    "Largest Community Size"))
 ```
 
 
 
 ## Adjacency Matrix
-```{r}
+```{r fig.width=4, fig.height=4,fig.align='center',eval=FALSE}
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
   
@@ -545,7 +604,7 @@ for(i in 1:4){
 ```
 
 
-```{r}
+```{r fig.width=4, fig.height=4,fig.align='center',eval=FALSE}
 set.seed(42)
 for(i in 1:4){
   adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
@@ -571,7 +630,7 @@ To reveal underlying structure, nodes were reordered by Louvain community member
 
 As we see above, all of the nodes are in one connected component. As such, this step is essentially the same as above. We will reorder the adjacency matrices for all of the remaining subgraphs as well.
 
-```{r}
+```{r fig.width=4, fig.height=4,fig.align='center',eval=FALSE}
 for (i in 1:4) {
   A <- as_adjacency_matrix(undirected_subgraphs[[i]], sparse = FALSE)
   
@@ -667,6 +726,307 @@ https://www.sas.rochester.edu/mth/undergraduate/honorspaperspdfs/a_myakushina23.
 \newpage
 
 # Appendix
-
+## All Code Implemenation
 ```{r appendix-code, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
+
+
+
+
+
+## Subgraph 1 Visual
+```{r, echo=FALSE}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[1]],
+  layout = layout_with_fr(subgraphs[[1]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 1 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[1]],
+  layout = layout_with_kk(subgraphs[[1]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 1 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[1]],
+  layout = layout_with_mds(subgraphs[[1]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 1 - MDS"
+)
+```
+
+
+
+## Subgraph 2 Visuals
+```{r,echo=FALSE}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[2]],
+  layout = layout_with_fr(subgraphs[[2]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 2- Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[2]],
+  layout = layout_with_kk(subgraphs[[2]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 2 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[2]],
+  layout = layout_with_mds(subgraphs[[2]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 2 - MDS"
+)
+```
+
+## Subgraph 3 Visuals
+```{r,echo=FALSE}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[3]],
+  layout = layout_with_fr(subgraphs[[3]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 3 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[3]],
+  layout = layout_with_kk(subgraphs[[3]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 3 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[3]],
+  layout = layout_with_mds(subgraphs[[3]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 3 - MDS"
+)
+```
+
+
+## Subgraph 4 Visuals
+```{r,echo=FALSE}
+par(mfrow = c(1,3))
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_fr(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - Fruchterman-Reingold"
+)
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_kk(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - Kamada-Kawai"
+)
+
+plot(
+  subgraphs[[4]],
+  layout = layout_with_mds(subgraphs[[4]]),
+  vertex.size = 4,
+  vertex.label = NA,
+  edge.arrow.size = 0.2,
+  main = "Subgraph 4 - MDS"
+)
+```
+
+
+
+
+
+
+## Betweenness Results
+
+
+```{r, echo=FALSE}
+print(betweenness(g))
+```
+
+## Closeness Centrality Results
+
+```{r,echo=FALSE}
+clr <- centr_clo(g, mode = "all", normalized = TRUE)
+print(sort(clr$res, decreasing = TRUE, index.return = TRUE))
+```
+
+## Local Transitivity Results
+
+```{r,echo=FALSE}
+print(transitivity(g, type = "local"))
+```
+
+
+## Subgraph 3 Community Detection Visual
+
+```{r,echo=FALSE}
+g3 <- undirected_subgraphs[[3]]
+
+# compute layout once so all plots use the same node positions
+L <- layout_with_kk(g3)
+
+par(mfrow = c(1,3))
+
+plot(community_objects[[3]]$fast_greedy, g3,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Fast Greedy")
+
+plot(community_objects[[3]]$louvain, g3,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Louvain")
+
+plot(community_objects[[3]]$walktrap, g3,
+     layout = L,
+     vertex.label = NA,
+     vertex.size = 7,
+     edge.color = "gray40",
+     edge.width = 0.8,
+     main = "Walktrap")
+
+```
+
+
+
+## All Adjacency Matrix Visuals
+```{r fig.width=4, fig.height=4, fig.align='center',echo=FALSE}
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  image(adj_mat,
+        main = paste("Subgraph", i, "- Original Node Order"),
+        col = c("white", "steelblue"),
+        axes = FALSE)
+}
+# convert all into undirected graphs
+undirected_subgraphs <- vector("list", 4)
+for (i in 1:4){
+  undirected_subgraphs[[i]] <- as.undirected(subgraphs[[i]])
+}
+# list to store all results
+all_results <- list()
+
+for (i in 1:4) {
+  g <- undirected_subgraphs[[i]]
+  
+  # run algs
+  fg   <- cluster_fast_greedy(g)
+  louv <- cluster_louvain(g)
+  walk <- cluster_walktrap(g)
+  
+  # store into list
+  all_results[[i]] <- data.frame(
+    Subgraph      = i,
+    Algorithm     = c("Fast Greedy", "Louvain", "Walktrap"),
+    N_communities = c(length(fg), length(louv), length(walk)),
+    Modularity_Q  = round(c(modularity(fg), modularity(louv), modularity(walk)), 4),
+    Max_Comm_Size = c(max(sizes(fg)), max(sizes(louv)), max(sizes(walk)))
+  )
+}
+```
+
+```{r fig.width=4, fig.height=4,fig.align='center',echo=FALSE}
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  image(adj_mat,
+        main = paste("Subgraph", i, "- Original Node Order"),
+        sub = "Blue = hyperlink exists, White = no hyperlink",
+        col = c("white", "steelblue"),
+        axes = FALSE,
+        xlab = "Node",
+        ylab = "Node")
+}
+```
+
+
+
+
+```{r fig.width=4, fig.height=4,fig.align='center', echo=FALSE}
+set.seed(42)
+for(i in 1:4){
+  adj_mat <- as_adjacency_matrix(subgraphs[[i]], sparse = FALSE)
+  
+  kc_louv <- cluster_louvain(undirected_subgraphs[[i]])
+  node_order <- order(membership(kc_louv))
+  adj_mat_reordered <- adj_mat[node_order, node_order]
+  
+  image(adj_mat_reordered,
+        main = paste("Subgraph", i, "- Reordered by Community"),
+        sub = "Blue = hyperlink exists, White = no hyperlink",
+        col = c("white", "steelblue"),
+        axes = FALSE,
+        xlab = "Node (reordered)",
+        ylab = "Node (reordered)")
+}
+```
+
+```{r fig.width=4, fig.height=4,fig.align='center',echo=FALSE}
+for (i in 1:4) {
+  A <- as_adjacency_matrix(undirected_subgraphs[[i]], sparse = FALSE)
+  
+  par(mfrow = c(1, 3))
+  
+  # loop through the algorithms
+  alg_names <- names(community_objects[[i]])
+  
+  for (alg in alg_names) {
+    comm_obj <- community_objects[[i]][[alg]]
+    
+    ord <- order(membership(comm_obj))
+    
+    A_reordered <- A[ord, ord]
+    
+    image(A_reordered,
+          main = paste("Sub", i, ":", alg),
+          xlab = "Node (reordered)", 
+          ylab = "Node (reordered)",
+          col=c("white", "steelblue"),
+          axes = FALSE)
+  }
+  
+  # reset plots for next one
+  par(mfrow = c(1, 1))
+}
 ```
