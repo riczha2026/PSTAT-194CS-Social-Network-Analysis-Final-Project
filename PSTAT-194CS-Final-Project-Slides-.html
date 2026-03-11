@@ -3428,24 +3428,36 @@ slides > slide:not(.title-slide)::after {
 </tr>
 </table>
 
+</article></slide><slide class=""><hgroup><h2>Objectives</h2></hgroup><article  id="objectives" class="smaller ">
+
+<ul>
+<li>Generate representative subgraphs of the Google Web graph using random walk sampling to deal with sparsity limitations of induced subgraphs</li>
+<li>Look into sampling bias by comparing degree distributions between the sampled subgraph and full network using the Kolmpgorov-Smirnov test</li>
+<li>Visualize the network structure of our subgraphs with the Fruchterman-Reingold, Kamada-Kawai, and Multidimensional Scaling (MDS) layout to reveal structural and connectivity patterns</li>
+<li>Compute and interpret network-level metrics (i.e. density, reciprocity, dyad census, transitivity, diameter, and mean distance) to capture the overall structure of the web graph</li>
+<li>Compute and interpret node-level metrics (i.e. in-degree, out-degree, betweenness centrality, closness centrality, and local transitivity) to identify influential web pages within the network</li>
+<li>Detect and compare communities using Fast-Greedy, Louvain, Walktrap algorithms and evaluate their results using molecularity scores and community sizes</li>
+<li>Examine the adjacency matrix of each subgraphs in their original and reordered form to confirm the presence of community strucutre and identify structural patterns.</li>
+</ul>
+
 </article></slide><slide class=""><hgroup><h2><code>induced_subgraph()</code> Implemenation</h2></hgroup><article  id="induced_subgraph-implemenation" class="smaller ">
 
-<pre >## IGRAPH 7568c60 DN-- 200 1 -- 
+<pre >## IGRAPH 1fc5fde DN-- 200 1 -- 
 ## + attr: name (v/c)
-## + edge from 7568c60 (vertex names):
+## + edge from 1fc5fde (vertex names):
 ## [1] 860469-&gt;343525</pre>
 
-<pre >## IGRAPH 6c41138 DN-- 200 0 -- 
+<pre >## IGRAPH e95b5d9 DN-- 200 0 -- 
 ## + attr: name (v/c)
-## + edges from 6c41138 (vertex names):</pre>
+## + edges from e95b5d9 (vertex names):</pre>
 
-<pre >## IGRAPH 566b598 DN-- 200 0 -- 
+<pre >## IGRAPH 79d7cdd DN-- 200 0 -- 
 ## + attr: name (v/c)
-## + edges from 566b598 (vertex names):</pre>
+## + edges from 79d7cdd (vertex names):</pre>
 
-<pre >## IGRAPH 82193f5 DN-- 200 1 -- 
+<pre >## IGRAPH 5666ef4 DN-- 200 1 -- 
 ## + attr: name (v/c)
-## + edge from 82193f5 (vertex names):
+## + edge from 5666ef4 (vertex names):
 ## [1] 203345-&gt;306718</pre>
 
 </article></slide><slide class=""><hgroup><h2>Random Walk Sampling Code</h2></hgroup><article  id="random-walk-sampling-code" class="smaller ">

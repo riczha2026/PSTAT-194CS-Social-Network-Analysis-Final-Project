@@ -225,6 +225,17 @@ knitr::kable(Dataset.info,
              align = c("l","l"))
 ```
 
+## Objectives
+
+
+* Generate representative subgraphs of the Google Web graph using random walk sampling to deal with sparsity limitations of induced subgraphs
+* Look into sampling bias by comparing degree distributions between the sampled subgraph and full network using the Kolmpgorov-Smirnov test
+* Visualize the network structure of our subgraphs with the Fruchterman-Reingold, Kamada-Kawai, and Multidimensional Scaling (MDS) layout to reveal structural and connectivity patterns
+* Compute and interpret network-level metrics (i.e. density, reciprocity, dyad census, transitivity, diameter, and mean distance) to capture the overall structure of the web graph 
+* Compute and interpret node-level metrics (i.e. in-degree, out-degree, betweenness centrality, closness centrality, and local transitivity) to identify influential web pages within the network
+* Detect and compare communities using Fast-Greedy, Louvain, Walktrap algorithms and evaluate their results using molecularity scores and community sizes
+* Examine the adjacency matrix of each subgraphs in their original and reordered form to confirm the presence of community strucutre and identify structural patterns.
+
 ## `induced_subgraph()` Implemenation
 
 ```{r, echo=FALSE}
