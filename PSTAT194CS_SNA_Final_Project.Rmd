@@ -53,28 +53,45 @@ continues to advance. With the rapid rise of AI, the internet has never
 been more critical, powering data pipelines, knowledge bases, and
 interconnected systems that modern machine learning systems depend on.
 Yet to truly understand the internet as it is today, it is valuable to
-examine it in its early development. At its core, the internet is fundamentally a network of webpages connected through hyperlinks. These hyperlinks create pathways that allow users and search engines to navigate from one page to another, forming a large and complex network structure.
+examine it in its early development. At its core, the internet is
+fundamentally a network of webpages connected through hyperlinks. These
+hyperlinks create pathways that allow users and search engines to
+navigate from one page to another, forming a large and complex network
+structure.
 
+Understanding how web pages are connected through hyperlinks provides
+valuable insight into how information spreads across the web, how groups
+of related pages form, and how influential pages emerge within the
+network. Studying early web graphs helps reveal how the internet
+organized itself before the dominance of modern platforms, large-scale
+search engine optimization, and centralized social media ecosystems.
 
-Understanding how web pages are connected through hyperlinks provides valuable insight into how information spreads across the web, how groups of related pages form, and how influential pages emerge within the network. Studying early web graphs helps reveal how the internet organized itself before the dominance of modern platforms, large-scale search engine optimization, and centralized social media ecosystems.
-
-
-Through this paper, we will explore how webpages were connected through hyperlinks during the early development of the internet as well as how it was after the dotcom bubble. By examining the structural properties of the Google Web Graph dataset from 2002. In which we aim to get a better understanding of connectivity patterns between webpages. As well as identify influential pages within the hyperlink network, and observe how groups of webpages form interconnected communities. 
-## Dataset Description
+Through this paper, we will explore how webpages were connected through
+hyperlinks during the early development of the internet as well as how
+it was after the dotcom bubble. By examining the structural properties
+of the Google Web Graph dataset from 2002. In which we aim to get a
+better understanding of connectivity patterns between webpages. As well
+as identify influential pages within the hyperlink network, and observe
+how groups of webpages form interconnected communities. \## Dataset
+Description
 
 We will be conducting a social network analysis to the web-Google
 dataset. Which is a directed web graph released by Google in $2002$ as
 part of the Google Programming Contest. Made publicly available through
-the Stanford Network Analysis Project (SNAP). 
+the Stanford Network Analysis Project (SNAP).
 
-Where the dataset comprises of $875713$ webpages (nodes) and $5105039$ directed
-hyperlinks (edges) capturing a rich and large-scale portait of the
-internet as it existed in $2002$. In this network:
+Where the dataset comprises of $875713$ webpages (nodes) and $5105039$
+directed hyperlinks (edges) capturing a rich and large-scale portait of
+the internet as it existed in $2002$. In this network:
 
-- Each node represent individual web pages that were collected from the internet in $2002$.
-- Each edge represent directed hyperlinks between webpages.
+-   Each node represent individual web pages that were collected from
+    the internet in $2002$.
+-   Each edge represent directed hyperlinks between webpages.
 
-The network is directed due to the fact that hyperlinks have specific directions. Where a webpage can link to another page without receiving a link back. This directionality structure will play an important rol in understanding how information flow across the web.
+The network is directed due to the fact that hyperlinks have specific
+directions. Where a webpage can link to another page without receiving a
+link back. This directionality structure will play an important rol in
+understanding how information flow across the web.
 
 ```{r, echo=FALSE}
 #Loading and Preparing Dataset
@@ -117,29 +134,40 @@ knitr::kable(Dataset.info,
              align = c("l","l"))
 ```
 
-
 ## Objectives:
-The objectives of this analysis are to better understanf how webpages interact through hyperlinks and how these connections shape the overall structure of the web network. Specifically, we ain to:
+
+The objectives of this analysis are to better understanf how webpages
+interact through hyperlinks and how these connections shape the overall
+structure of the web network. Specifically, we ain to:
 
 -   Generate representative subgraphs of the Google Web graph using
-    random walk sampling to capture meaningful hyperlink relationships between webpages that a "induced" subgraph fails to do
+    random walk sampling to capture meaningful hyperlink relationships
+    between webpages that a "induced" subgraph fails to do
 
--   Evaluate potential sampling bias by comparing the degree distributions of sampled subgraphs and the full network using the Kolmogorov-Smirnov test
+-   Evaluate potential sampling bias by comparing the degree
+    distributions of sampled subgraphs and the full network using the
+    Kolmogorov-Smirnov test
 
--   Visualize the hyperlink network  using mulitple graph layour algorithms (Fruchterman-Reingold, Kamada-Kawai, and Multidimensional Scaling) to reveal structural patterns in how webpages link to one another
+-   Visualize the hyperlink network using mulitple graph layour
+    algorithms (Fruchterman-Reingold, Kamada-Kawai, and Multidimensional
+    Scaling) to reveal structural patterns in how webpages link to one
+    another
 
--   Compute network-level metrics (i.e. density,
-    reciprocity, dyad census, transitivity, diameter, and mean distance)
-    to capture the overall structure of webpage connections
+-   Compute network-level metrics (i.e. density, reciprocity, dyad
+    census, transitivity, diameter, and mean distance) to capture the
+    overall structure of webpage connections
 
 -   Compute and interpret node-level metrics (i.e. in-degree,
     out-degree, betweenness centrality, closness centrality, and local
     transitivity) to identify influential web pages within the network
 
--   Detect communities using Fast-Greedy, Louvain, Walktrap
-    algorithms to identify groups of webpages that are tightly connected through hyperlinks
+-   Detect communities using Fast-Greedy, Louvain, Walktrap algorithms
+    to identify groups of webpages that are tightly connected through
+    hyperlinks
 
--   Examine the adjacency matrices of each sampled subgraphs to visually confirm structural patterns and the presence of hyperlink communities
+-   Examine the adjacency matrices of each sampled subgraphs to visually
+    confirm structural patterns and the presence of hyperlink
+    communities
 
 # Methodology
 
@@ -167,13 +195,18 @@ web-Google graph is extremely sparse (density $\approx$
 `r round(edge_density(graph),7)`). This would make it difficult to get
 any meaningful analysis.
 
-Rather than relyihng solely on random node sampling, we will utilize the concept of random walk to
-sample. Where we would use igraph's built in `random_walk()` function.
-Beginning with a randomly chosen seed node, a random walk proceeds for
-$500$ steps by following the network’s edges and recording the nodes
-encountered. The first $200$ unique nodes visited during this process
-are then used to construct each induced subgraph. This method helps
-ensure that the sampled webpoages maintain realistic hyperlink relationships, allowing the resulting subgraphs to better reflect the local structure of how webpages connect to one another. 
+Rather than relyihng solely on random node sampling, we will utilize the
+concept of random walk to sample. Where we would use igraph's built in
+`random_walk()` function. Beginning with a randomly chosen seed node, a
+random walk proceeds for $500$ steps by following the network’s edges
+and recording the nodes encountered. The first $200$ unique nodes
+visited during this process are then used to construct each induced
+subgraph. This method helps ensure that the sampled webpoages maintain
+realistic hyperlink relationships, allowing the resulting subgraphs to
+better reflect the local structure of how webpages connect to one
+another.
+
+\newpage
 
 ```{r}
 set.seed(123)
@@ -289,23 +322,48 @@ knitr::kable(packages,
              align = c("l", "l"))
 ```
 
+\newpage
+
 # Analysis
 
 ## Network Visualization
 
 Now to get a better understanding of our subgraphs that we have created,
 we will visualize them using three various layouts available in the
-`igraph` package. With each visualization having nodes represent webpages and edges represent hyperlinks connecting those pages.
+`igraph` package. With each visualization having nodes represent
+webpages and edges represent hyperlinks connecting those pages.
 
-Through this paper we will be utilizing three different visualization layout algorithms to position webpages in ways that highlight structural pattern in the network. With those three layouts being **Fruchterman-Reingold (FR)**, **Kamada-Kawai (KK)**, and **Multidimensional Scaling (MDS)**.
-- **Fruchterman-Reingold (FR)**: pulls hyperlinks that connect to webpages closer together while pushing unrelated pages apart. Resulting in webpages that frequently link to each other to appear near one another in the visualization. When clusters appear it represents groups of webpages that are densely connected through hyperlinks. Which suggests relate content or closely linked websites.
+Through this paper we will be utilizing three different visualization
+layout algorithms to position webpages in ways that highlight structural
+pattern in the network. With those three layouts being
+**Fruchterman-Reingold (FR)**, **Kamada-Kawai (KK)**, and
+**Multidimensional Scaling (MDS)**.
 
-- **Kamada-Kawai (KK)**: preserve graph distances when positioning nodes. So webpages that are closely connected through hyperlinks appear closer together. While pages that are separated by multiple hyperlinks appear further apart. Which will help reveal any underlying structure of the hyperlink network and make it easier to identify tightly connected groups of webpages.
+-   **Fruchterman-Reingold (FR)**: pulls hyperlinks that connect to
+    webpages closer together while pushing unrelated pages apart.
+    Resulting in webpages that frequently link to each other to appear
+    near one another in the visualization. When clusters appear it
+    represents groups of webpages that are densely connected through
+    hyperlinks. Which suggests relate content or closely linked
+    websites.
 
--**Multidimensional Scaling (MDS)**: places webpages in positions that reflect their overall similarity in hyperlink connectivity. Pages that share many common hyperlink relationships tend to appear close together in the visualization. This layout highlights webpages that occupy similar structural roles in the network.
+<!-- -->
 
+-   **Kamada-Kawai (KK)**: preserve graph distances when positioning
+    nodes. So webpages that are closely connected through hyperlinks
+    appear closer together. While pages that are separated by multiple
+    hyperlinks appear further apart. Which will help reveal any
+    underlying structure of the hyperlink network and make it easier to
+    identify tightly connected groups of webpages.
+-   **Multidimensional Scaling (MDS)**: places webpages in positions
+    that reflect their overall similarity in hyperlink connectivity.
+    Pages that share many common hyperlink relationships tend to appear
+    close together in the visualization. This layout highlights webpages
+    that occupy similar structural roles in the network.
 
-With these visualization layouts, we can gain initial insights into how webpages organize themselves through hyperlinkk connections and how clusters od related pages emerge within the web.
+With these visualization layouts, we can gain initial insights into how
+webpages organize themselves through hyperlink connections and how
+clusters of related pages emerge within the web.
 
 ### Subgraph 1
 
@@ -351,9 +409,21 @@ tight and circular with the branches appearing more spread and
 structured compared to the FR layout. Lastly in MDS layout, we can
 notice that the branches stretch our more linearly, the central cluster
 is less visually dense, and the network forms a Y like structure with
-the lines having relatively equal length. 
+the lines having relatively equal length.
 
-In relation to webpages and hyperlinks, this suggests that subgraph 1 contains a group of webpages that are highly interconnected through hyperlinks. Which form a central core of pages that frequently reference each other. With the branching chains it represents sequences of webpages that link outward from the central core. Which can potentially indicate that pages that reference the central cluster are not strongly interconnected with each other. The small satellite clusters at the end of the branches could suggests niche groups of webpages that primarily link within their own small community. While maintaining limited hyperlink connections to the whole network. Overall, the structure of subgraph 1 suggests that information in this portion if the whole network flows outward from a dense set of interconnected webpages to more peripheral pages connected through fewer hyperlinks.
+In relation to webpages and hyperlinks, this suggests that subgraph 1
+contains a group of webpages that are highly interconnected through
+hyperlinks. Which form a central core of pages that frequently reference
+each other. With the branching chains it represents sequences of
+webpages that link outward from the central core. Which can potentially
+indicate that pages that reference the central cluster are not strongly
+interconnected with each other. The small satellite clusters at the end
+of the branches could suggests niche groups of webpages that primarily
+link within their own small community. While maintaining limited
+hyperlink connections to the whole network. Overall, the structure of
+subgraph 1 suggests that information in this portion if the whole
+network flows outward from a dense set of interconnected webpages to
+more peripheral pages connected through fewer hyperlinks.
 
 ### Subgraph 2
 
@@ -388,11 +458,11 @@ plot(
 )
 ```
 
-Based on the visuals, we can see that it is relatively different
-different compared to subgraph $1$. In the FR Layout, we can notice that
-it has the same U shape as the FR layout for subgraph $1$. However, we
-can see that there are visibly two clusters. With these clusters being
-connected by a long chain of nodes. Suggesting a bridge like path
+Based on the visualizations, subgraph 2 displays a structure that is
+noticeably different from subgraph 1. In the FR Layout, we can notice
+that it has the same U shape as the FR layout for subgraph $1$. However,
+we can see that there are visibly two clusters. With these clusters
+being connected by a long chain of nodes. Suggesting a bridge like path
 linking between two communities. Which also indicate that the
 connectivity between the two groups is weak. With the KK layout, we also
 notice two clusters much clearer. With it also showing a connecting path
@@ -400,11 +470,16 @@ between the two communities, and peripheral node branching off the main
 chain. Which indicate the same thing as the FR layout. Showing that we
 have two groups that are structurally separate from each other but are
 connected. In the MDS layout, we can see that like the visuals from
-subgraph $1$, it has a Y shape. However, subgraph $2$ is upside down. We
-can also notice that most of our nodes are on the bottom two lines of
-the upside down Y. When viewed as webpages and hyperlinks, this pattern
-indicates that two groups of pages are mostly internally connected, with
-only a few bridging pages linking the two sections of the network.
+subgraph $1$, it has a Y shape. However, subgraph $2$ is inverted. We
+can also notice that most of our nodes are positioned along the lower
+two branches of the inverted Y. While the connecting path forms a the
+central structure linking the clusters. When viewed as webpages and
+hyperlinks, this structure indicates that two groups of webpages are
+strongly connected within their own communities through internal
+hyperlinks. While only a few bridging webpages link the two groups
+together. The bridging pages likely play an important role in connecting
+otherwise separate regions of the web. Acting as a gateway through which
+users or information can move between the two clusters of webpages.
 
 ### Subgraph 3
 
@@ -439,24 +514,29 @@ plot(
 )
 ```
 
-For the visuals for subgraph $3$, we observe how different they look
-compared to the other two subgraphs above. For the FR layout, like
+For the visualizations for subgraph $3$, we observe how different they
+look compared to the other two subgraphs above. For the FR layout, like
 subgraph $2$, we can see that we have two clusters that are weakly
 connected to each other. However, we notice that the link between the
 two are more direct and the clustering is a little bit weaker compared
-to subgraph $2$. Also it does not display a U shape. This also shows
+to subgraph $2$. This suggests that fewer dense hyperlink connections
+with each community. Also it does not display a U shape. This also shows
 that there are only a few nodes that link between the two groups. In the
 KK layout, we can also see two communities that are connected to each
 other. However, we can see that the clustering of the two clusters are
-relatively weaker (nodes are more spread out). Lastly, for the MDS
-layout, we can see that it is also a Y shape like the other subgraphs we
-have seen above. However, we can notice some nodes that are not tightly
-within the Y shape. Which reveals that the network contains several long
-paths branching from a central region. Interpreting nodes as webpages
-and edges as hyperlinks, this structure suggests that the network
-contains two loosely connected groups of webpages, where most links
-occur within each group and only a few intermediary pages provide
-connections between them.
+relatively weaker (nodes are more spread out). Which suggests that while
+the groups exist, the internal connectivity between webpages within each
+cluster is not as strong or densely interconnected as in the earlier
+subgrpahs. Lastly, for the MDS layout, we can see that it is also a Y
+shape like the other subgraphs we have seen above. However, we can
+notice some nodes that are not tightly within the Y shape. Which reveals
+that the network contains several long paths branching from a central
+region. Interpreting nodes as webpages and edges as hyperlinks, this
+structure suggests that the network contains two loosely connected
+groups of webpages, where most hyperlinks occur within each group and
+only a few intermediary webpages provide connections between them. These
+intermediary webpages serve asl influential bridges that allow
+information to flow between relatively separate groups of webpages.
 
 ### Subgraph 4
 
@@ -492,24 +572,30 @@ plot(
 ```
 
 Lastly for subgraph $4$, we can also clearly notice that we have two
-dense clusters connected bu a narrow bridging path. Where in the FR
-layout, can can see that we have two clusters. However, in those
-clusters there are subclusters in them. As we can see small clusters
-spread around in both the overall large clusters. As for the K layout we
-can also see that we have two groups. However, it shows the same results
-are the FR layout. In that there are several small subclusters that
-appear inside the larger group. Which also highlight how our community
-is structured. Showing that nodes within the cluster are more strongly
-connected to each other than to nodes in the other group. Now what is
-extremely interesting is the MDS layout. Where for the other subgraphs
-they for the most part formed a tight Y shape. However, for subgraph $4$
-we can notice how it does form a Y shape. But, the nodes are extremely
-spread out. This suggests that our network is organized more around
-paths and branching connections rather than tightly packed clusters. In
-relation to webpages and hyperlinks, this structure suggests that
-webpages are organized into clustered sections with internal linking,
-while a small number of bridging pages create branching hyperlink paths
-that connect different parts of the network.
+dense clusters connected by a narrow bridging path. Where in the FR
+layout, can see that we have two clusters. However, in those clusters
+there are subclusters in them. As we can see small clusters spread
+around in both the overall large clusters. This suggests that the
+network not only contains two major groups but also smaller internal
+structures within each group. As for the KK layout we can also see that
+we have two groups. However, it shows the same results are the FR
+layout. In that there are several small subclusters that appear inside
+the larger group. Which also highlight how our community is structured.
+Showing that nodes within the cluster are more strongly connected to
+each other than to nodes in the other group. Highlighting a hierarchical
+structure of the network. Where nodes within each cluster are more
+stronly connected to each other than to nodes in the other group. Now
+what is extremely interesting is the MDS layout. Where for the other
+subgraphs they for the most part formed a tight Y shape. However, for
+subgraph $4$ we can notice how it does form a Y shape. But, the nodes
+are extremely spread out. This suggests that our network is organized
+more around paths and branching connections rather than tightly packed
+clusters. In relation to webpages and hyperlinks, this structure
+suggests that webpages are organized into clustered sections where pages
+frequently link to others within the same group. Meanwhile, a small
+number of bridging webpages create hyperlink paths that connect
+different parts of the network. Allowing information to move between
+relatively separate sections of the web like in subgraph 3.
 
 ## Network Metrics
 
@@ -899,6 +985,8 @@ notice that there are two main shapes of dense boxes or relatively more
 sparse L shapes. Additionally, we see that Walktrap has more smaller
 boxes compared to Fast Greedy and Louvain.
 
+\newpage
+
 # Results
 
 To address the extreme sparsity of the full web graph, random walk
@@ -906,42 +994,45 @@ sampling was used to generate four representative subgraphs. For each
 sample, a walk began from a randomly selected seed node and proceeded
 for 500 steps through the network, and the first 200 unique nodes
 visited were used to construct an induced subgraph. This approach
-allowed us to capture locally connected regions of the web with
-meaningful hyperlink structure.
+allowed us to capture locally connected regions of the web while
+preserving meaningful hyperlink relationships between webpages.
 
 Across all four sampled subgraphs, the networks exhibit clustered
 structures connected by a small number of bridging nodes, rather than
 forming a single densely connected component. This indicates that
-webpages tend to organize into tightly linked groups with relatively few
-connections between different clusters. Interestingly, Subgraph 1 shows
-a more fragmented structure consisting of several dense clusters
-connected by sparse bridge nodes, while subgraph 4 reveal two main
+webpages tend to organize into tightly linked groups, with relatively
+few hyperlinks connecting different clusters. Interestingly, Subgraph 1
+shows a more fragmented structure consisting of several dense clusters
+connected by sparse bridge nodes, while Subgraph 4 reveals two main
 communities connected by narrow linking paths. These patterns suggest
 that webpages are organized into internally linked sections, with a
-small number of bridging pages forming paths between different parts of
-the network.
+small number of bridging pages forming hyperlink pathways between
+different parts of the network.
 
 Connectivity varies depending on where the random walk occurs in the
 graph, with mean node degrees ranging from approximately 8.4 to 16.1,
-and Subgraph 4 representing the most densely connected region.
+with Subgraph 4 representing the most densely connected region.
 Visualizations using Fruchterman–Reingold, Kamada–Kawai, and MDS layouts
 consistently highlight community clustering, branching structures, and
-intermediary nodes connecting separate regions of the graph.
+intermediary nodes that connect separate regions of the hyperlink
+network.
 
 Community detection further supports these structural insights. The
 Walktrap algorithm generally detects more communities than Louvain or
-Fast-Greedy, indicating smaller subcommunities within larger clusters,
-while all algorithms produce high modularity scores (around 0.7 or
-higher). Reordering adjacency matrices by Louvain community membership
-reveals clear block-diagonal patterns, confirming that most edges occur
-within communities and only a few nodes link different clusters.
-Occasional L-shaped patterns represent hub-like webpages connecting
-multiple communities.
+Fast-Greedy, suggesting the presence of smaller subcommunities nested
+within larger clusters. At the same time, all algorithms produce high
+modularity scores (around 0.7 or higher), indicating strong community
+structure. Reordering adjacency matrices by Louvain community membership
+reveals clear block-diagonal patterns, confirming that most hyperlinks
+occur within communities, while only a small number of nodes connect
+different clusters. Occasional L-shaped patterns suggest hub-like
+webpages that link to multiple communities.
 
 Overall, these results demonstrate that random walk sampling effectively
-captured locally dense regions of the web graph while preserving key
-structural properties, including modularity, hierarchical communities,
-and hub-mediated connectivity.
+captures locally dense regions of the web graph while preserving key
+structural properties, including strong community organization,
+hierarchical clustering, and hub-mediated hyperlink connectivity between
+groups of webpages.
 
 # Conclusion
 
@@ -950,18 +1041,19 @@ by examining the Google web graph from 2002 using social network
 analysis techniques. Because the full network is extremely large and
 sparse, random walk sampling was used to extract representative
 subgraphs that capture locally connected regions of the web. This
-approach allowed us to analyze meaningful hyperlink structures while
-maintaining computational feasibility.
+approach allowed us to analyze meaningful hyperlink structures between
+webpages while maintaining computational feasibility.
 
 Several key insights emerged from the analysis. First, the sampled
 networks consistently revealed a strong community-based structure, where
-webpages form tightly connected clusters with relatively few links
+webpages form tightly connected clusters with relatively few hyperlinks
 connecting different groups. Network metrics such as reciprocity and
 transitivity suggest that webpages frequently reinforce connections
 within their own local neighborhoods, creating cohesive communities of
 related content. Visualizations across multiple layouts further
 highlighted these patterns, revealing clusters, branching paths, and
-intermediary nodes that connect different regions of the network.
+intermediary webpages that link otherwise separate regions of the
+network.
 
 Community detection algorithms reinforced these observations. High
 modularity scores across all tested methods indicate clear and stable
@@ -969,31 +1061,31 @@ community boundaries, while the larger number of communities detected by
 Walktrap suggests the presence of hierarchical subcommunities within
 broader clusters. Adjacency matrix reordering also visually confirmed
 this structure through clear block-diagonal patterns, demonstrating that
-hyperlinks are concentrated within topical clusters rather than
-distributed randomly across the network.
+hyperlinks tend to concentrate within groups of related webpages rather
+than being randomly distributed across the network.
 
-Together, these results highlight that the early web was not organized
-as a uniform or random network. Instead, it exhibited a modular and
+Together, these results show that the early web was not organized as a
+uniform or random network. Instead, it exhibited a modular and
 hierarchical architecture, where clusters of related webpages were
-connected through a smaller set of bridging pages and hubs.
-Understanding this structure helps explain how information flowed
-through the early internet and provides insight into how search engines
-such as Google could identify important pages and rank content
-effectively.
+connected through a smaller number of bridging pages and hyperlink hubs.
+Understanding this structure helps explain how information could flow
+across the early internet and provides insight into how search engines
+were able to identify influential webpages and rank content effectively.
 
 Future work could expand on this analysis by exploring larger sampled
-subgraphs, comparing different network sampling methods, or
-incorporating temporal web datasets to examine how the structure of the
-internet evolved over time. Additional analysis could also investigate
-centrality measures, link prediction, or topic-based clustering to
-further understand how influential webpages and communities shaped the
-development of the web.
+subgraphs, comparing alternative network sampling methods, or
+incorporating temporal web datasets to examine how the hyperlink
+structure of the internet evolved over time. Additional analysis could
+also investigate centrality measures, link prediction, or topic-based
+clustering to further understand how influential webpages and
+communities shaped the development of the web.
 
 Overall, this study demonstrates that even when analyzing sampled
 portions of a massive network, important structural properties of the
-early internet can still be observed, offering valuable insight into the
-foundations of the interconnected web that continues to support modern
-information systems and AI technologies.
+early internet can still be observed. These findings provide insight
+into the foundations of the interconnected web and highlight how
+hyperlink relationships between webpages played a central role in
+shaping the structure of the internet.
 
 \newpage
 
