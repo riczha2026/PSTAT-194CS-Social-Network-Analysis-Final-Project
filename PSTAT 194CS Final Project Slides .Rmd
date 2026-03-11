@@ -438,7 +438,7 @@ for (i in 1:4) {
 final_comparison <- do.call(rbind, all_results)
 ```
 ## Subgraph 4 Community Detection Visualization
-```{r,echo=FALSE}
+```{r,fig.align='center', echo=FALSE}
 g4 <- undirected_subgraphs[[4]]
 
 # compute layout once so all plots use the same node positions
