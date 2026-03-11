@@ -605,37 +605,32 @@ After reordering by community for each algorithm, we can see that the nodes form
 
 
 # Results
-To address the extreme sparsity of the full web graph, random walk sampling was used to generate four representative subgraphs. For each sample, a walk began from a randomly selected seed node and proceeded for $500$ steps through the network. The first $200$ unique nodes visited were then used to construct an induced subgraph, allowing us to capture locally connected regions of the web with meaningful hyperlink structure.
+To address the extreme sparsity of the full web graph, random walk sampling was used to generate four representative subgraphs. For each sample, a walk began from a randomly selected seed node and proceeded for 500 steps through the network, and the first 200 unique nodes visited were used to construct an induced subgraph. This approach allowed us to capture locally connected regions of the web with meaningful hyperlink structure.
 
-Across all four sampled subgraphs, the networks display clustered structures connected by a small number of bridging nodes rather than forming a single densely connected component. This indicates that webpages tend to organize into tightly linked groups with relatively few connections between different clusters.
+Across all four sampled subgraphs, the networks exhibit clustered structures connected by a small number of bridging nodes, rather than forming a single densely connected component. This indicates that webpages tend to organize into tightly linked groups with relatively few connections between different clusters. Interestingly, Subgraph 1 shows a more fragmented structure consisting of several dense clusters connected by sparse bridge nodes, while subgraph 4 reveal two main communities connected by narrow linking paths. These patterns suggest that webpages are organized into internally linked sections, with a small number of bridging pages forming paths between different parts of the network.
 
-Interestingly, Subgraph 1 shows a more fragmented structure consisting of several dense clusters connected by sparse bridge nodes. In contrast, the other subgraphs more clearly reveal two main communities connected by narrow linking paths. These patterns suggest that webpages are often organized into internally linked sections, with a small number of bridging pages forming hyperlink paths between different parts of the network.
+Connectivity varies depending on where the random walk occurs in the graph, with mean node degrees ranging from approximately 8.4 to 16.1, and Subgraph 4 representing the most densely connected region. Visualizations using Fruchterman–Reingold, Kamada–Kawai, and MDS layouts consistently highlight community clustering, branching structures, and intermediary nodes connecting separate regions of the graph.
 
-Connectivity also varies depending on where the random walk occurs in the graph. The sampled subgraphs have mean node degrees ranging from approximately $8.4$ to $16.1$, with Subgraph 4 representing the most densely connected region. Visualizations using the Fruchterman–Reingold, Kamada–Kawai, and MDS layouts consistently highlight community clustering, branching structures, and intermediary nodes linking separate regions of the graph.
+Community detection further supports these structural insights. The Walktrap algorithm generally detects more communities than Louvain or Fast-Greedy, indicating smaller subcommunities within larger clusters, while all algorithms produce high modularity scores (around 0.7 or higher). Reordering adjacency matrices by Louvain community membership reveals clear block-diagonal patterns, confirming that most edges occur within communities and only a few nodes link different clusters. Occasional L-shaped patterns represent hub-like webpages connecting multiple communities.
 
-The overall low density aligns with known properties of web networks, where a small number of hub pages connect many otherwise independent webpages. However, the relatively low centralization observed suggests that the largest global hubs were unlikely to appear in these small sampled subgraphs.
-
-Community detection results further support this structure. The Walktrap algorithm generally detects more communities than Louvain or Fast-Greedy, suggesting the presence of smaller subcommunities within larger groups. At the same time, all algorithms produce high modularity values (around $0.7$ or higher), indicating strong and well-defined community structure across the sampled networks.
-
-Reordering the adjacency matrices by Louvain community membership reveals clear diagonal block patterns, most prominently in Subgraph 4. These blocks indicate that most edges occur within communities, while only a small number of nodes connect different groups. Some matrices also show L-shaped patterns, which represent hub-like webpages linking to multiple communities, similar to large informational or directory-style sites.
-
-Overall, the results show that random walk sampling successfully captures locally dense regions of the web graph and preserves key structural properties of the early internet, including modularity, hierarchical communities, and hub-mediated connectivity.
-
-
+Overall, these results demonstrate that random walk sampling effectively captured locally dense regions of the web graph while preserving key structural properties, including modularity, hierarchical communities, and hub-mediated connectivity.
 
 
 
 
 # Conclusion
 
+This analysis explored the structural organization of the early internet by examining the Google web graph from 2002 using social network analysis techniques. Because the full network is extremely large and sparse, random walk sampling was used to extract representative subgraphs that capture locally connected regions of the web. This approach allowed us to analyze meaningful hyperlink structures while maintaining computational feasibility.
 
+Several key insights emerged from the analysis. First, the sampled networks consistently revealed a strong community-based structure, where webpages form tightly connected clusters with relatively few links connecting different groups. Network metrics such as reciprocity and transitivity suggest that webpages frequently reinforce connections within their own local neighborhoods, creating cohesive communities of related content. Visualizations across multiple layouts further highlighted these patterns, revealing clusters, branching paths, and intermediary nodes that connect different regions of the network.
 
+Community detection algorithms reinforced these observations. High modularity scores across all tested methods indicate clear and stable community boundaries, while the larger number of communities detected by Walktrap suggests the presence of hierarchical subcommunities within broader clusters. Adjacency matrix reordering also visually confirmed this structure through clear block-diagonal patterns, demonstrating that hyperlinks are concentrated within topical clusters rather than distributed randomly across the network.
 
+Together, these results highlight that the early web was not organized as a uniform or random network. Instead, it exhibited a modular and hierarchical architecture, where clusters of related webpages were connected through a smaller set of bridging pages and hubs. Understanding this structure helps explain how information flowed through the early internet and provides insight into how search engines such as Google could identify important pages and rank content effectively.
 
+Future work could expand on this analysis by exploring larger sampled subgraphs, comparing different network sampling methods, or incorporating temporal web datasets to examine how the structure of the internet evolved over time. Additional analysis could also investigate centrality measures, link prediction, or topic-based clustering to further understand how influential webpages and communities shaped the development of the web.
 
-
-
-
+Overall, this study demonstrates that even when analyzing sampled portions of a massive network, important structural properties of the early internet can still be observed, offering valuable insight into the foundations of the interconnected web that continues to support modern information systems and AI technologies.
 
 
 
@@ -649,6 +644,24 @@ Overall, the results show that random walk sampling successfully captures locall
 \newpage
 
 # References
+Leskovec, J., Lang, K. J., Dasgupta, A., & Mahoney, M. W. (2009).  
+Community structure in large networks: Natural cluster sizes and the absence of large well-defined clusters. *Internet Mathematics*, 6(1), 29–123.  
+Dataset retrieved from the Stanford Network Analysis Project (SNAP):  
+https://snap.stanford.edu/data/web-Google.html
+
+Csardi, G., & Nepusz, T. (2022).  
+*igraph: Network Analysis and Visualization in R*.  
+Random walk documentation:  
+https://r.igraph.org/reference/random_walk.html
+
+Csardi, G., & Nepusz, T. (2022).  
+Random walk on a graph — igraph R documentation.  
+https://igraph.org/r/html/1.3.1/random_walk.html
+
+Myakushina, A. (2023).  
+*Community Detection in Complex Networks*.  
+University of Rochester Mathematics Honors Thesis.  
+https://www.sas.rochester.edu/mth/undergraduate/honorspaperspdfs/a_myakushina23.pdf
 
 
 \newpage

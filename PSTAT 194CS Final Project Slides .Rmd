@@ -430,7 +430,27 @@ image(adj_mat_reordered,
 
 ## Conclusion 
 
+- Random Walk sampling allowed us to analyze meaningful locally connected regions for our sparse Google web graph
 
+- Our sampled network consistently showed strong community structure, where webpages cluster into tightly connected groups
+
+- High reciprocity and transitivity indicatet that webpages frequently link within their own communities
+
+- Community detection algorithms produces high modularity ($\approx 0.7+$), confirming well-defined communities
+
+- Walktrap detected more communities than Louvian and Fast-Greedy - hierarchical subcommunities within larger clusters
+
+- Reordered adjacency matrices revealed clear block-diagonal patterns - hyperlinks are concentrated within topical clusters rather than randomly distributed
+
+- Occasional hub-like pages connect multiple communities - bridges between different topics
+
+
+
+## Future Direction
+
+- Analyze larger sampled subgraphs to capture more global network structure
+- Compare different network sampling methods to reduce sampling bias
+- Explore temporal web datasets to study how web structure evolved over time
 
 
 
