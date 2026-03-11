@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 
 \vspace{0.8cm}
 
-{\Large March 2026\par}
+{\Large March 11, 2026\par}
 
 \end{center}
 
