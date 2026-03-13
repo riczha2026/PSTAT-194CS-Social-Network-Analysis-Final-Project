@@ -69,11 +69,12 @@ search engine optimization, and centralized social media ecosystems.
 Through this paper, we will explore how webpages were connected through
 hyperlinks during the early development of the internet as well as how
 it was after the dotcom bubble. By examining the structural properties
-of the Google Web Graph dataset from 2002. In which we aim to get a
-better understanding of connectivity patterns between webpages. As well
-as identify influential pages within the hyperlink network, and observe
-how groups of webpages form interconnected communities. \## Dataset
-Description
+of the Google Web Graph dataset from 2002. We aim to get a
+better understanding of connectivity patterns between webpages, identify 
+influential pages within the hyperlink network, and observe
+how groups of webpages form interconnected communities. 
+
+## Dataset Description
 
 We will be conducting a social network analysis to the web-Google
 dataset. Which is a directed web graph released by Google in $2002$ as
@@ -195,7 +196,7 @@ web-Google graph is extremely sparse (density $\approx$
 `r round(edge_density(graph),7)`). This would make it difficult to get
 any meaningful analysis.
 
-Rather than relyihng solely on random node sampling, we will utilize the
+Rather than relying solely on random node sampling, we will utilize the
 concept of random walk to sample. Where we would use igraph's built in
 `random_walk()` function. Beginning with a randomly chosen seed node, a
 random walk proceeds for $500$ steps by following the network’s edges
@@ -696,12 +697,6 @@ out-edges are distinct. There is a clear right skew in both histograms,
 which is expected for a web graph since most websites will have a
 handful of connections but few will have a great deal.
 
-#### Betweenness (per node)
-
-```{r, eval=FALSE}
-print(betweenness(g))
-```
-
 Betweenness is a centrality measure that finds the frequency of a node
 existing within the shortest path between two other nodes. Nodes with
 high betweenness centrality are often critical points in the network
@@ -710,13 +705,6 @@ betweenness measure of over 1400 while others have a betweenness of 0.
 Pages like Yahoo or trusted encyclopedia pages likely had these high
 centralities, since they would have been referred to frequently by other
 sites even if they were not directly related.
-
-#### Closeness Centrality (per node)
-
-```{r,eval=FALSE}
-clr <- centr_clo(g, mode = "all", normalized = TRUE)
-print(sort(clr$res, decreasing = TRUE, index.return = TRUE))
-```
 
 Closeness is a centrality measure that measures the distance from a node
 to all other nodes. Important nodes will have a higher closeness since
@@ -728,12 +716,6 @@ will typically be relevant to the original website and most connections
 will not stray too far away. The low centralization of \<0.15 suggests
 that centrality is distributed fairly evenly across the network, with
 very few websites dominating traffic.
-
-#### Local Transitivity (per node)
-
-```{r,eval=FALSE}
-print(transitivity(g, type = "local"))
-```
 
 Local transitivity is the smaller-scale measure of transitivity, and
 tells whether the data's clustering occurs frequently between small
